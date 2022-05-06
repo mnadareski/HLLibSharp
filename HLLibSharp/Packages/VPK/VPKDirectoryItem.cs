@@ -1,0 +1,96 @@
+﻿/*
+ * HLLib
+ * Copyright (C) 2006-2010 Ryan Gregg
+
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later
+ * version.
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
+
+namespace HLLib.Packages.VPK
+{
+    public class VPKDirectoryItem
+    {
+        public string Extension { get; set; }
+
+        public string Path { get; set; }
+
+        public string Name { get; set; }
+
+        public VPKDirectoryEntry DirectoryEntry { get; set; }
+
+        public byte[] PreloadData { get; set; }
+
+        public VPKDirectoryItem(string extension, string path, string name, VPKDirectoryEntry directoryEntry, byte[] preloadData)
+        {
+            Extension = extension;
+            Path = path;
+            Name = name;
+            DirectoryEntry = directoryEntry;
+            PreloadData = preloadData;
+        }
+
+        private VPKDirectoryItem()
+        {
+            // Private for Create constructor below
+        }
+
+        public static VPKDirectoryItem Create(byte[] data, ref int offset)
+        {
+            VPKDirectoryItem directoryItem = new VPKDirectoryItem();
+
+            // Check to see if the data is valid
+            if (data == null)
+                return null;
+
+            List<byte> temp = new List<byte>();
+            while (data[offset] != 0)
+            {
+                temp.Add(data[offset++]);
+            }
+            directoryItem.Extension = Encoding.ASCII.GetString(temp.ToArray());
+            offset++;
+
+            temp = new List<byte>();
+            while (data[offset] != 0)
+            {
+                temp.Add(data[offset++]);
+            }
+            directoryItem.Path = Encoding.ASCII.GetString(temp.ToArray());
+            offset++;
+
+            temp = new List<byte>();
+            while (data[offset] != 0)
+            {
+                temp.Add(data[offset++]);
+            }
+            directoryItem.Name = Encoding.ASCII.GetString(temp.ToArray());
+            offset++;
+
+            directoryItem.DirectoryEntry = VPKDirectoryEntry.Create(data, ref offset);
+            directoryItem.PreloadData = null; // TODO: Figure out how to populate this
+
+            return directoryItem;
+        }
+
+        public byte[] Serialize()
+        {
+            int offset = 0;
+            byte[] data = new byte[Marshal.SizeOf(new VPKDirectoryItem()) + 3];
+
+            Array.Copy(Encoding.ASCII.GetBytes(Extension), 0, data, offset, Extension.Length); offset += Extension.Length + 1;
+            Array.Copy(Encoding.ASCII.GetBytes(Path), 0, data, offset, Path.Length); offset += Path.Length + 1;
+            Array.Copy(Encoding.ASCII.GetBytes(Name), 0, data, offset, Name.Length); offset += Name.Length + 1;
+            Array.Copy(DirectoryEntry.Serialize(), 0, data, offset, Marshal.SizeOf(new VPKDirectoryEntry()));
+
+            return data;
+        }
+    }
+}
