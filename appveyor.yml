@@ -1,0 +1,52 @@
+# version format
+version: 0.0.1-{build}
+
+# pull request template
+pull_requests:
+  do_not_increment_build_number: true
+
+# vm template
+image: Visual Studio 2022
+
+# environment variables
+environment:
+  EnableNuGetPackageRestore: true
+
+# msbuild configuration
+platform:
+- Any CPU
+configuration:
+- Debug
+
+# install dependencies
+install:
+- ps: appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+- cd %APPVEYOR_BUILD_FOLDER%
+- git submodule update --init --recursive
+
+# pre-build script
+before_build:
+- nuget restore
+
+# build step
+build:
+  verbosity: minimal
+  project: HLLibSharp.sln
+
+# post-build step
+after_build:
+- cd HLLibSharp\bin\Debug
+- 7z a HLLibSharp_netstandard2.0.zip netstandard2.0\*
+
+# success/failure tracking
+on_success:
+  - ps: Invoke-RestMethod https://raw.githubusercontent.com/DiscordHooks/appveyor-discord-webhook/master/send.ps1 -o send.ps1
+  - ps: ./send.ps1 success $env:WEBHOOK_URL
+on_failure:
+  - ps: Invoke-RestMethod https://raw.githubusercontent.com/DiscordHooks/appveyor-discord-webhook/master/send.ps1 -o send.ps1
+  - ps: ./send.ps1 failure $env:WEBHOOK_URL
+
+# artifact linking
+artifacts:
+- path: HLLibSharp\bin\Debug\HLLibSharp_netstandard2.0.zip
+  name: BurnOutSharp (.NET Standard 2.0)
