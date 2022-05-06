@@ -5,3 +5,5 @@
 /.vs/HLLibSharp
 /HLLibSharp/bin/Debug/netstandard2.0
 /HLLibSharp/obj
+/Test/obj
+/Test/bin/Debug

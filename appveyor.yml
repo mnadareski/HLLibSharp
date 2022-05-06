@@ -35,8 +35,11 @@ build:
 
 # post-build step
 after_build:
-- cd HLLibSharp\bin\Debug
-- 7z a HLLibSharp_netstandard2.0.zip netstandard2.0\*
+- cd Test\bin\Debug
+- 7z a HLLibSharp_net48.zip net48\*
+- 7z a HLLibSharp_netcoreapp3.1.zip netcoreapp3.1\*
+- 7z a HLLibSharp_net5.0.zip net5.0\*
+- 7z a HLLibSharp_net6.0.zip net6.0\*
 
 # success/failure tracking
 on_success:
@@ -48,5 +51,11 @@ on_failure:
 
 # artifact linking
 artifacts:
-- path: HLLibSharp\bin\Debug\HLLibSharp_netstandard2.0.zip
-  name: BurnOutSharp (.NET Standard 2.0)
+- path: Test\bin\Debug\HLLibSharp_net48.zip
+  name: HLLibSharp (.NET Framework 4.8)
+- path: Test\bin\Debug\HLLibSharp_netcoreapp3.1.zip
+  name: HLLibSharp (.NET Core 3.1)
+- path: Test\bin\Debug\HLLibSharp_net5.0.zip
+  name: HLLibSharp (.NET 5.0)
+- path: Test\bin\Debug\HLLibSharp_net6.0.zip
+  name: HLLibSharp (.NET 6.0)
