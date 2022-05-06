@@ -21,7 +21,8 @@ namespace Test
 
                 // Create a new package from the file
                 Package package = Package.CreatePackage(packageType);
-                bool opened = package.Open(arg, FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_WRITE, overwriteFiles: true);
+                FileModeFlags mode = FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_WRITE | FileModeFlags.HL_MODE_CREATE | FileModeFlags.HL_MODE_NO_FILEMAPPING;
+                bool opened = package.Open(arg, mode, overwriteFiles: true);
                 if (!opened)
                 {
                     Console.WriteLine("Package could not be opened!");
