@@ -172,11 +172,10 @@ namespace HLLib.Packages.VBSP
                 }
             }
 
-            uint test;
             int offset = 0, pointer = 0;
             while (offset < EndOfCentralDirectoryRecord.CentralDirectorySize - 4)
             {
-                test = BitConverter.ToUInt32(FileHeaderView.ViewData, (int)offset);
+                uint test = BitConverter.ToUInt32(FileHeaderView.ViewData, offset);
                 switch (test)
                 {
                     case HL_VBSP_ZIP_FILE_HEADER_SIGNATURE:
@@ -276,7 +275,6 @@ namespace HLLib.Packages.VBSP
 
             if (ZIPEndOfCentralDirectoryRecord.ObjectSize <= Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length)
             {
-                int test;
                 long offset = Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset;
                 while (offset < Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length - 4)
                 {
@@ -285,7 +283,7 @@ namespace HLLib.Packages.VBSP
                     if (!Mapping.Map(ref testView, offset, 4))
                         return false;
 
-                    test = BitConverter.ToInt32(testView.ViewData, 0);
+                    int test = BitConverter.ToInt32(testView.ViewData, 0);
 
                     Mapping.Unmap(ref testView);
 
@@ -367,25 +365,8 @@ namespace HLLib.Packages.VBSP
             if (bufferSize == 0)
                 return null;
 
-            string mappingName = Mapping.FileName;
-            if (string.IsNullOrEmpty(mappingName))
-                return string.Empty;
-
-            int forward = mappingName.IndexOf('\\');
-            int backward = mappingName.IndexOf('/');
-            int start = forward > backward ? forward : backward;
-
-            if (start != 0)
-                start++;
-
-            int end = mappingName.IndexOf('.');
-            if (end == 0)
-                end = start + mappingName.Substring(start).Length;
-
-            if ((uint)(end - start) + 1 < bufferSize)
-                bufferSize = (uint)(end - start) + 1;
-
-            return mappingName.Substring(start, (int)bufferSize);
+            string mappingName = System.IO.Path.GetFileName(Mapping.FileName);
+            return mappingName.Substring(0, Math.Min((int)bufferSize, mappingName.Length));
         }
 
         #endregion

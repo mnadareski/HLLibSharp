@@ -18,7 +18,10 @@ namespace HLLib.Packages.BSP
         /// <summary>
         /// Total size of a BSPTextureHeader object
         /// </summary>
-        public const int ObjectSize = 4 + (4 * 1);
+        /// <remarks>
+        /// This does not include variable length fields
+        /// </remarks>
+        public const int ObjectSize = 4;
 
         /// <summary>
         /// Texture count
@@ -39,8 +42,8 @@ namespace HLLib.Packages.BSP
                 return null;
 
             textureHeader.TextureCount = BitConverter.ToUInt32(data, offset); offset += 4;
-            textureHeader.Offsets = new uint[1];
-            for (int i = 0; i < 1; i++)
+            textureHeader.Offsets = new uint[textureHeader.TextureCount];
+            for (int i = 0; i < textureHeader.TextureCount; i++)
             {
                 textureHeader.Offsets[i] = BitConverter.ToUInt32(data, offset); offset += 4;
             }

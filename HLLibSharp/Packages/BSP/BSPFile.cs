@@ -113,7 +113,7 @@ namespace HLLib.Packages.BSP
 
             if (Header.Lumps[HL_BSP_LUMP_ENTITIES].Length != 0)
             {
-                string fileName = GetFileName();
+                string fileName = System.IO.Path.GetFileName(Mapping.FileName);
                 if (fileName[fileName.Length - 4] == '\0')
                 {
                     root.AddFile("entities.ent", TextureHeader.TextureCount);
@@ -126,15 +126,13 @@ namespace HLLib.Packages.BSP
             }
 
             // Loop through each texture in the BSP file.
-            byte[] textureViewData = TextureView.ViewData;
             for (uint i = 0; i < TextureHeader.TextureCount; i++)
             {
-                if ((int)(TextureHeader.Offsets[i]) == -1)
+                if ((int)TextureHeader.Offsets[i] == -1)
                     continue;
 
-                int pointer = BSPTextureHeader.ObjectSize + (int)TextureHeader.Offsets[i];
-
-                BSPTexture texture = BSPTexture.Create(textureViewData, ref pointer);
+                int pointer = (int)TextureHeader.Offsets[i];
+                BSPTexture texture = BSPTexture.Create(TextureView.ViewData, ref pointer);
                 if (texture.Offsets[0] == 0)
                     continue;
 
@@ -182,32 +180,6 @@ namespace HLLib.Packages.BSP
 
             Header = null;
             Mapping.Unmap(ref HeaderView);
-        }
-
-        /// <summary>
-        /// Get the filename from the mapping
-        /// </summary>
-        /// <returns>Filename from the mapping, null on error</returns>
-        private string GetFileName()
-        {
-            string mappingName = Mapping.FileName;
-
-            if (string.IsNullOrEmpty(mappingName))
-                return null;
-
-            int lpForward = mappingName.IndexOf('\\');
-            int lpBackward = mappingName.IndexOf('/');
-            int lpStart = lpForward > lpBackward ? lpForward : lpBackward;
-
-            if (lpStart != 0)
-                lpStart++;
-
-            int lpEnd = mappingName.IndexOf('.', lpStart);
-
-            if (lpEnd == 0)
-                lpEnd = lpStart + mappingName.Substring(lpStart).Length;
-
-            return mappingName.Substring(lpStart, lpEnd);
         }
 
         #endregion

@@ -686,9 +686,9 @@ namespace HLLib.Packages.NCF
             {
                 string temp = path;
                 if (item.Parent == null)
-                    path = RootPath.Substring(0, pathSize);
+                    path = RootPath.Substring(0, Math.Min(pathSize, RootPath.Length));
                 else
-                    path = item.Name.Substring(0, pathSize);
+                    path = item.Name.Substring(0, Math.Min(pathSize, item.Name.Length));
 
                 path = System.IO.Path.Combine(path, temp);
                 item = item.Parent;

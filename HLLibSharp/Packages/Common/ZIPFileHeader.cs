@@ -150,7 +150,7 @@ namespace HLLib.Packages.Common
             fileHeader.ExternalFileAttribs = BitConverter.ToUInt32(data, offset); offset += 4;
             fileHeader.RelativeOffsetOfLocalHeader = BitConverter.ToUInt32(data, offset); offset += 4;
 
-            if (offset < ObjectSize)
+            if (offset < data.Length)
             {
                 fileHeader.FileName = Encoding.ASCII.GetString(data, offset, fileHeader.FileNameLength); offset += fileHeader.FileNameLength;
                 fileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, fileHeader.ExtraFieldLength); offset += fileHeader.ExtraFieldLength;

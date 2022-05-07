@@ -112,7 +112,7 @@ namespace HLLib.Packages.Common
             localFileHeader.FileNameLength = BitConverter.ToUInt16(data, offset); offset += 2;
             localFileHeader.ExtraFieldLength = BitConverter.ToUInt16(data, offset); offset += 2;
 
-            if (offset < ObjectSize)
+            if (offset < data.Length)
             {
                 localFileHeader.FileName = Encoding.ASCII.GetString(data, offset, localFileHeader.FileNameLength); offset += localFileHeader.FileNameLength;
                 localFileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, localFileHeader.ExtraFieldLength); offset += localFileHeader.ExtraFieldLength;

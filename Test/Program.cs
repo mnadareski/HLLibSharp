@@ -38,6 +38,12 @@ namespace Test
                     // Print all package info
                     Package.PrintPackageInfo(package);
                     Console.WriteLine();
+
+                    // Create the root directory
+                    DirectoryFolder rootDirectory = package.GetRoot();
+
+                    // Close the package explicitly
+                    package.Close();
                 }
                 catch (Exception ex)
                 {
