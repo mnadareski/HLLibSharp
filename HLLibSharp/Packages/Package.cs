@@ -174,6 +174,72 @@ namespace HLLib.Packages
             }
         }
 
+        /// <summary>
+        /// Print all descriptor infoemation to console
+        /// </summary>
+        /// <param name="package">Package to print info for</param>
+        public static void PrintPackageInfo(Package package)
+        {
+            // Invalid pavkages can't have info printed
+            if (package == null || package.PackageType == PackageType.HL_PACKAGE_NONE)
+            {
+                Console.WriteLine("Invalid package.");
+                return;
+            }
+
+            // Common information
+            Console.WriteLine($"Package Type: {package.PackageType}");
+            Console.WriteLine($"Extension: {package.Extension}");
+            Console.WriteLine($"Description: {package.Description}");
+            if (package.AttributeNames.Length > 0)
+                Console.WriteLine($"Attribute Names: {string.Join(", ", package.AttributeNames)}");
+            if (package.ItemAttributeNames.Length > 0)
+                Console.WriteLine($"Item Attribute Names: {string.Join(", ", package.ItemAttributeNames)}");
+
+            // Per-package information
+            // TODO: Add mapping/object information
+            switch (package.PackageType)
+            {
+                case PackageType.HL_PACKAGE_BSP:
+                    var bspPackage = package as BSP.BSPFile;
+                    break;
+
+                case PackageType.HL_PACKAGE_GCF:
+                    var gcfPackage = package as GCF.GCFFile;
+                    break;
+
+                case PackageType.HL_PACKAGE_NCF:
+                    var ncfPackage = package as NCF.NCFFile;
+                    Console.WriteLine($"Root Path: {ncfPackage.RootPath}");
+                    break;
+
+                case PackageType.HL_PACKAGE_PAK:
+                    var pakPackage = package as PAK.PAKFile;
+                    break;
+
+                case PackageType.HL_PACKAGE_VBSP:
+                    var vbspPackage = package as VBSP.VBSPFile;
+                    break;
+
+                case PackageType.HL_PACKAGE_VPK:
+                    var vpkPackage = package as VPK.VPKFile;
+                    Console.WriteLine($"Archive Count: {vpkPackage.ArchiveCount}");
+                    break;
+
+                case PackageType.HL_PACKAGE_WAD:
+                    var wadPackage = package as WAD.WADFile;
+                    break;
+
+                case PackageType.HL_PACKAGE_XZP:
+                    var xzpPackage = package as XZP.XZPFile;
+                    break;
+
+                case PackageType.HL_PACKAGE_ZIP:
+                    var zipPackage = package as ZIP.ZIPFile;
+                    break;
+            }
+        }
+
         #endregion
 
         #region Descriptors

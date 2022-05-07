@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using HLLib.Directory;
 
+// TODO: Add GUID for map/unmap parenting
 namespace HLLib.Mappings
 {
     /// <summary>
