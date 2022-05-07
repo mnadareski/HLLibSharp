@@ -134,11 +134,6 @@ namespace HLLib.Mappings
                 Console.WriteLine($"Requested view ({offset}, {length}) does not fit inside mapping, (0, {BufferSize}).");
                 return false;
             }
-            else if (offset + length == BufferSize)
-            {
-                // Move back one byte, just in case
-                offset--;
-            }
 
             view = new View(this, offset, length);
             return true;
@@ -157,7 +152,7 @@ namespace HLLib.Mappings
             if (length < 0 || length > Data.Length)
                 return null;
 
-            if (offset + length >= Data.Length)
+            if (offset + length > Data.Length)
                 return null;
 
             byte[] buffer = new byte[length];
@@ -174,7 +169,7 @@ namespace HLLib.Mappings
             if (data == null || data.Length == 0 || data.Length > Data.Length)
                 return false;
 
-            if (offset + data.Length >= Data.Length)
+            if (offset + data.Length > Data.Length)
                 return false;
 
             Array.Copy(data, 0, Data, offset, data.Length);

@@ -152,11 +152,6 @@ namespace HLLib.Mappings
                 Console.WriteLine($"Requested view ({offset}, {length}) does not fit inside mapping, (0, {FileStream.Length}).");
                 return false;
             }
-            else if (offset + length == FileStream.Length)
-            {
-                // Move back one byte, just in case
-                offset--;
-            }
 
             view = new View(this, offset, length);
             return true;
@@ -175,7 +170,7 @@ namespace HLLib.Mappings
             if (length < 0 || length > FileStream.Length)
                 return null;
 
-            if (offset + length >= FileStream.Length)
+            if (offset + length > FileStream.Length)
                 return null;
 
             long currentPosition = FileStream.Position;
@@ -197,7 +192,7 @@ namespace HLLib.Mappings
             if (data == null || data.Length == 0 || data.Length > FileStream.Length)
                 return false;
 
-            if (offset + data.Length >= FileStream.Length)
+            if (offset + data.Length > FileStream.Length)
                 return false;
 
             long currentPosition = FileStream.Position;

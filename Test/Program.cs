@@ -20,6 +20,7 @@ namespace Test
                     if (packageType == PackageType.HL_PACKAGE_NONE)
                     {
                         Console.WriteLine("Could not determine package type!");
+                        Console.WriteLine();
                         continue;
                     }
 
@@ -30,15 +31,18 @@ namespace Test
                     if (!opened)
                     {
                         Console.WriteLine("Package could not be opened!");
+                        Console.WriteLine();
                         continue;
                     }
 
                     // Print all package info
                     Package.PrintPackageInfo(package);
+                    Console.WriteLine();
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
+                    Console.WriteLine();
                 }
             }
         }
@@ -62,7 +66,7 @@ namespace Test
                 {
                     byte[] buffer = new byte[16];
                     fs.Read(buffer, 0, 16);
-                    return Package.GetPackageTypeFromHeader(buffer);
+                    return Package.GetPackageType(buffer, Path.GetExtension(file));
                 }
             }
             catch (Exception ex)

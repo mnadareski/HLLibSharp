@@ -92,48 +92,91 @@ namespace HLLib.Packages
         /// Detect a package type from the magic number in the header
         /// </summary>
         /// <param name="magic">Magic number from the header (at least 8 bytes)</param>
+        /// <param name="extension">File extension to check</param>
         /// <returns>Detected package type, if possible</returns>
-        public static PackageType GetPackageTypeFromHeader(byte[] magic)
+        public static PackageType GetPackageType(byte[] magic, string extension = null)
         {
-            // Validate the magic number data
-            if (magic == null || magic.Length < 8)
-                return PackageType.HL_PACKAGE_NONE;
+            // Magic number data
+            if (magic != null && magic.Length >= 8)
+            {
+                // BSP
+                if (new byte[] { 0x1e, 0x00, 0x00, 0x00 }.SequenceEqual(magic.Take(4)))
+                    return PackageType.HL_PACKAGE_BSP;
 
-            // BSP
-            if (new byte[] { 0x1e, 0x00, 0x00, 0x00 }.SequenceEqual(magic.Take(4)))
-                return PackageType.HL_PACKAGE_BSP;
+                // GCF
+                if (new byte[] { 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 }.SequenceEqual(magic.Take(8)))
+                    return PackageType.HL_PACKAGE_GCF;
 
-            // GCF
-            if (new byte[] { 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 }.SequenceEqual(magic.Take(8)))
-                return PackageType.HL_PACKAGE_GCF;
+                // NCF
+                if (new byte[] { 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00 }.SequenceEqual(magic.Take(8)))
+                    return PackageType.HL_PACKAGE_NCF;
 
-            // NCF
-            if (new byte[] { 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00 }.SequenceEqual(magic.Take(8)))
-                return PackageType.HL_PACKAGE_NCF;
+                // PAK
+                if (new byte[] { (byte)'P', (byte)'A', (byte)'C', (byte)'K' }.SequenceEqual(magic.Take(4)))
+                    return PackageType.HL_PACKAGE_PAK;
 
-            // PAK
-            if (new byte[] { (byte)'P', (byte)'A', (byte)'C', (byte)'K' }.SequenceEqual(magic.Take(4)))
-                return PackageType.HL_PACKAGE_PAK;
+                // VBSP
+                if (new byte[] { (byte)'V', (byte)'B', (byte)'S', (byte)'P' }.SequenceEqual(magic.Take(4)))
+                    return PackageType.HL_PACKAGE_VBSP;
 
-            // VBSP
-            if (new byte[] { (byte)'V', (byte)'B', (byte)'S', (byte)'P' }.SequenceEqual(magic.Take(4)))
-                return PackageType.HL_PACKAGE_VBSP;
+                // VPK
+                if (new byte[] { 0x34, 0x12, 0x55, 0xaa }.SequenceEqual(magic.Take(4)))
+                    return PackageType.HL_PACKAGE_VPK;
 
-            // VPK
-            if (new byte[] { 0x34, 0x12, 0x55, 0xaa }.SequenceEqual(magic.Take(4)))
-                return PackageType.HL_PACKAGE_VPK;
+                // WAD
+                if (new byte[] { (byte)'W', (byte)'A', (byte)'D', (byte)'3' }.SequenceEqual(magic.Take(4)))
+                    return PackageType.HL_PACKAGE_WAD;
 
-            // WAD
-            if (new byte[] { (byte)'W', (byte)'A', (byte)'D', (byte)'3' }.SequenceEqual(magic.Take(4)))
-                return PackageType.HL_PACKAGE_WAD;
+                // XZP
+                if (new byte[] { (byte)'p', (byte)'i', (byte)'Z', (byte)'x' }.SequenceEqual(magic.Take(4)))
+                    return PackageType.HL_PACKAGE_XZP;
 
-            // XZP
-            if (new byte[] { (byte)'p', (byte)'i', (byte)'Z', (byte)'x' }.SequenceEqual(magic.Take(4)))
-                return PackageType.HL_PACKAGE_XZP;
+                // ZIP
+                if (new byte[] { (byte)'P', (byte)'K' }.SequenceEqual(magic.Take(2)))
+                    return PackageType.HL_PACKAGE_ZIP;
+            }
 
-            // ZIP
-            if (new byte[] { (byte)'P', (byte)'K' }.SequenceEqual(magic.Take(2)))
-                return PackageType.HL_PACKAGE_ZIP;
+            // Extension
+            if (extension != null && extension.Length > 0)
+            {
+                extension = extension.TrimStart('.').ToLowerInvariant();
+
+                // BSP
+                if (extension == new BSP.BSPFile().Extension)
+                    return PackageType.HL_PACKAGE_BSP;
+
+                // GCF
+                if (extension == new GCF.GCFFile().Extension)
+                    return PackageType.HL_PACKAGE_GCF;
+
+                // NCF
+                if (extension == new NCF.NCFFile().Extension)
+                    return PackageType.HL_PACKAGE_NCF;
+
+                // PAK
+                if (extension == new PAK.PAKFile().Extension)
+                    return PackageType.HL_PACKAGE_PAK;
+
+                // VBSP
+                if (extension == new VBSP.VBSPFile().Extension)
+                    return PackageType.HL_PACKAGE_VBSP;
+
+                // VPK
+                if (extension == new VPK.VPKFile().Extension)
+                    return PackageType.HL_PACKAGE_VPK;
+
+                // WAD
+                if (extension == new WAD.WADFile().Extension)
+                    return PackageType.HL_PACKAGE_WAD;
+
+                // XZP
+                if (extension == new XZP.XZPFile().Extension)
+                    return PackageType.HL_PACKAGE_XZP;
+
+                // ZIP
+                if (extension == new ZIP.ZIPFile().Extension)
+                    return PackageType.HL_PACKAGE_ZIP;
+            }
 
             return PackageType.HL_PACKAGE_NONE;
         }
