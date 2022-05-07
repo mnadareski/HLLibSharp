@@ -94,18 +94,21 @@ namespace HLLib.Mappings
             if (!Opened)
                 return false;
 
+            // If we have an invalid offset
+            if (offset < 0 || offset >= Stream.Length)
+                return false;
+
+            // If we have an invalid length
             if (offset + length > Stream.Length)
             {
                 Console.WriteLine($"Requested view ({offset}, {length}) does not fit inside mapping, (0, {Stream.Length}).");
                 return false;
             }
-
-            if (Stream.Seek(offset, SeekOrigin.Begin) != offset)
-                return false;
-
-            byte[] data = new byte[length];
-            if (Stream.Read(data, 0, length) != length)
-                return false;
+            else if (offset + length == Stream.Length)
+            {
+                // Move back one byte, just in case
+                offset--;
+            }
 
             view = new View(this, offset, length);
             return true;

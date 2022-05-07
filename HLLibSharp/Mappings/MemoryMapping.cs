@@ -87,7 +87,7 @@ namespace HLLib.Mappings
         protected override bool OpenInternal(FileModeFlags fileMode, bool overwrite)
         {
             if (InternalOpened)
-                throw new ArgumentException("Memory must be initialized before opening");
+                return false;
 
             if (BufferSize != 0 && Data == null)
             {
@@ -121,14 +121,23 @@ namespace HLLib.Mappings
         /// <inheritdoc/>
         protected override bool MapInternal(long offset, int length, ref View view)
         {
-            view = null;
             if (!Opened)
-                throw new ArgumentException("Memory must be initialized before mapping");
+                return false;
 
+            // If we have an invalid offset
+            if (offset < 0 || offset >= BufferSize)
+                return false;
+
+            // If we have an invalid length
             if (offset + length > BufferSize)
             {
-                Console.WriteLine($"Requested view ({offset}, {length}) does not fit inside mapping, (0, {this.BufferSize}).");
+                Console.WriteLine($"Requested view ({offset}, {length}) does not fit inside mapping, (0, {BufferSize}).");
                 return false;
+            }
+            else if (offset + length == BufferSize)
+            {
+                // Move back one byte, just in case
+                offset--;
             }
 
             view = new View(this, offset, length);

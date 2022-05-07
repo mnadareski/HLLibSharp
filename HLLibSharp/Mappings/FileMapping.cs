@@ -85,7 +85,7 @@ namespace HLLib.Mappings
         protected override bool OpenInternal(FileModeFlags uiMode, bool overwrite)
         {
             if (!Opened)
-                throw new ArgumentException("Stream must be initialized before opening");
+                return false;
 
             FileAccess fileAccess = 0;
             if (uiMode.HasFlag(FileModeFlags.HL_MODE_READ) && uiMode.HasFlag(FileModeFlags.HL_MODE_WRITE))
@@ -139,30 +139,27 @@ namespace HLLib.Mappings
         /// <inheritdoc/>
         protected override bool MapInternal(long offset, int length, ref View view)
         {
-            view = null;
             if (!Opened)
-                throw new ArgumentException("Stream must be initialized before mapping");
+                return false;
 
             // If we have an invalid offset
             if (offset < 0 || offset >= FileStream.Length)
                 return false;
 
-            // If we have an invalid lenght
-            if (offset + length > (FileStream.Length - offset))
+            // If we have an invalid length
+            if (offset + length > FileStream.Length)
+            {
+                Console.WriteLine($"Requested view ({offset}, {length}) does not fit inside mapping, (0, {FileStream.Length}).");
                 return false;
+            }
+            else if (offset + length == FileStream.Length)
+            {
+                // Move back one byte, just in case
+                offset--;
+            }
 
-            view = new View(this, offset + FileStream.Position, length);
+            view = new View(this, offset, length);
             return true;
-        }
-
-        /// <inheritdoc/>
-        protected override void UnmapInternal(View view)
-        {
-            if (!Opened)
-                throw new ArgumentException("Stream must be initialized before unmapping");
-
-            if (view.Mapping != this)
-                throw new ArgumentException("Tried to unmap from an invalid parent");
         }
 
         #endregion
