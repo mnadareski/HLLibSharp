@@ -18,7 +18,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFDataBlockHeader object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 6);
 
         /// <summary>
         /// GCF file version.  This field is not part of all file versions.

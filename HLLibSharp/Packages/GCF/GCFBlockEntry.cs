@@ -18,7 +18,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFBlockEntry object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 7);
 
         /// <summary>
         /// Flags for the block entry.  0x200F0000 == Not used.

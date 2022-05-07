@@ -101,6 +101,7 @@ namespace HLLib.Packages.GCF
             header.Dummy2 = BitConverter.ToUInt32(data, offset); offset += 4;
             header.FileSize = BitConverter.ToUInt32(data, offset); offset += 4;
             header.BlockSize = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.BlockCount = BitConverter.ToUInt32(data, offset); offset += 4;
             header.Dummy3 = BitConverter.ToUInt32(data, offset); offset += 4;
 
             return header;

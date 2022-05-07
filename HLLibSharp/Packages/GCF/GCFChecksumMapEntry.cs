@@ -18,7 +18,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFChecksumMapEntry object
         /// </summary>
-        public const int ObjectSize = 4 + 4;
+        public const int ObjectSize = (4 * 2);
 
         /// <summary>
         /// Number of checksums.

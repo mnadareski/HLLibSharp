@@ -631,9 +631,6 @@ namespace HLLib.Packages.GCF
             uint version;
             long headerSize = 0;
 
-            byte[] headerViewData = HeaderView.ViewData;
-            int pointer = 0;
-
             #region Header
 
             if (GCFHeader.ObjectSize > Mapping.MappingSize)
@@ -645,7 +642,8 @@ namespace HLLib.Packages.GCF
             if (!Mapping.Map(ref HeaderView, 0, GCFHeader.ObjectSize))
                 return false;
 
-            Header = GCFHeader.Create(headerViewData, ref pointer);
+            int pointer = 0;
+            Header = GCFHeader.Create(HeaderView.ViewData, ref pointer);
             if (Header == null)
             {
                 Console.WriteLine("Invalid file: the file's header is null (contains no data).");
@@ -668,7 +666,8 @@ namespace HLLib.Packages.GCF
             if (!Mapping.Map(ref HeaderView, headerSize, GCFBlockEntryHeader.ObjectSize))
                 return false;
 
-            BlockEntryHeader = GCFBlockEntryHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            BlockEntryHeader = GCFBlockEntryHeader.Create(HeaderView.ViewData, ref pointer);
             headerSize += GCFBlockEntryHeader.ObjectSize + (BlockEntryHeader.BlockCount * GCFBlockEntry.ObjectSize);
 
             #endregion
@@ -678,7 +677,8 @@ namespace HLLib.Packages.GCF
             if (!Mapping.Map(ref HeaderView, headerSize, GCFFragmentationMapHeader.ObjectSize))
                 return false;
 
-            FragmentationMapHeader = GCFFragmentationMapHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            FragmentationMapHeader = GCFFragmentationMapHeader.Create(HeaderView.ViewData, ref pointer);
             headerSize += GCFFragmentationMapHeader.ObjectSize + (FragmentationMapHeader.BlockCount * GCFFragmentationMap.ObjectSize);
 
             #endregion
@@ -690,7 +690,8 @@ namespace HLLib.Packages.GCF
                 if (!Mapping.Map(ref HeaderView, headerSize, GCFBlockEntryMapHeader.ObjectSize))
                     return false;
 
-                BlockEntryMapHeader = GCFBlockEntryMapHeader.Create(headerViewData, ref pointer);
+                pointer = 0;
+                BlockEntryMapHeader = GCFBlockEntryMapHeader.Create(HeaderView.ViewData, ref pointer);
                 headerSize += GCFBlockEntryMapHeader.ObjectSize + (BlockEntryMapHeader.BlockCount * GCFBlockEntryMap.ObjectSize);
             }
 
@@ -701,11 +702,12 @@ namespace HLLib.Packages.GCF
             if (!Mapping.Map(ref HeaderView, headerSize, GCFDirectoryHeader.ObjectSize))
                 return false;
 
-            DirectoryHeader = GCFDirectoryHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            DirectoryHeader = GCFDirectoryHeader.Create(HeaderView.ViewData, ref pointer);
 
             headerSize += DirectoryHeader.DirectorySize;
             if (version >= 5)
-                headerSize += GCFDirectoryHeader.ObjectSize;
+                headerSize += GCFDirectoryMapHeader.ObjectSize;
 
             headerSize += DirectoryHeader.ItemCount * GCFDirectoryMapEntry.ObjectSize;
 
@@ -716,7 +718,8 @@ namespace HLLib.Packages.GCF
             if (!Mapping.Map(ref HeaderView, headerSize, GCFChecksumHeader.ObjectSize))
                 return false;
 
-            ChecksumHeader = GCFChecksumHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            ChecksumHeader = GCFChecksumHeader.Create(HeaderView.ViewData, ref pointer);
             headerSize += GCFChecksumHeader.ObjectSize + ChecksumHeader.ChecksumSize;
 
             #endregion
@@ -726,7 +729,8 @@ namespace HLLib.Packages.GCF
             if (!Mapping.Map(ref HeaderView, headerSize, GCFDataBlockHeader.ObjectSize))
                 return false;
 
-            DataBlockHeader = GCFDataBlockHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            DataBlockHeader = GCFDataBlockHeader.Create(HeaderView.ViewData, ref pointer);
 
             // It seems that some GCF files may have allocated only the data blocks that are used.  Extraction,
             // validation and defragmentation should fail cleanly if an unallocated data block is indexed so
@@ -753,30 +757,29 @@ namespace HLLib.Packages.GCF
                 return false;
 
             pointer = 0;
+            Header = GCFHeader.Create(HeaderView.ViewData, ref pointer);
 
-            Header = GCFHeader.Create(headerViewData, ref pointer);
-
-            BlockEntryHeader = GCFBlockEntryHeader.Create(headerViewData, ref pointer);
+            BlockEntryHeader = GCFBlockEntryHeader.Create(HeaderView.ViewData, ref pointer);
             BlockEntries = new GCFBlockEntry[BlockEntryHeader.BlockCount];
             for (int i = 0; i < BlockEntryHeader.BlockCount; i++)
             {
-                BlockEntries[i] = GCFBlockEntry.Create(headerViewData, ref pointer);
+                BlockEntries[i] = GCFBlockEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
-            FragmentationMapHeader = GCFFragmentationMapHeader.Create(headerViewData, ref pointer);
+            FragmentationMapHeader = GCFFragmentationMapHeader.Create(HeaderView.ViewData, ref pointer);
             FragmentationMaps = new GCFFragmentationMap[FragmentationMapHeader.BlockCount];
             for (int i = 0; i < FragmentationMapHeader.BlockCount; i++)
             {
-                FragmentationMaps[i] = GCFFragmentationMap.Create(headerViewData, ref pointer);
+                FragmentationMaps[i] = GCFFragmentationMap.Create(HeaderView.ViewData, ref pointer);
             }
 
             if (version < 6)
             {
-                BlockEntryMapHeader = GCFBlockEntryMapHeader.Create(headerViewData, ref pointer);
+                BlockEntryMapHeader = GCFBlockEntryMapHeader.Create(HeaderView.ViewData, ref pointer);
                 BlockEntryMaps = new GCFBlockEntryMap[BlockEntryMapHeader.BlockCount];
                 for (int i = 0; i < BlockEntryMapHeader.BlockCount; i++)
                 {
-                    BlockEntryMaps[i] = GCFBlockEntryMap.Create(headerViewData, ref pointer);
+                    BlockEntryMaps[i] = GCFBlockEntryMap.Create(HeaderView.ViewData, ref pointer);
                 }
             }
             else
@@ -786,66 +789,66 @@ namespace HLLib.Packages.GCF
             }
 
             int directoryHeaderIndex = pointer;
-            DirectoryHeader = GCFDirectoryHeader.Create(headerViewData, ref pointer);
+            DirectoryHeader = GCFDirectoryHeader.Create(HeaderView.ViewData, ref pointer);
             DirectoryEntries = new GCFDirectoryEntry[DirectoryHeader.ItemCount];
             for (int i = 0; i < DirectoryHeader.ItemCount; i++)
             {
-                DirectoryEntries[i] = GCFDirectoryEntry.Create(headerViewData, ref pointer);
+                DirectoryEntries[i] = GCFDirectoryEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
-            DirectoryNames = Encoding.ASCII.GetString(headerViewData, pointer, (int)DirectoryHeader.NameSize); pointer += (int)DirectoryHeader.NameSize;
+            DirectoryNames = Encoding.ASCII.GetString(HeaderView.ViewData, pointer, (int)DirectoryHeader.NameSize); pointer += (int)DirectoryHeader.NameSize;
 
             DirectoryInfo1Entries = new GCFDirectoryInfo1Entry[DirectoryHeader.Info1Count];
             for (int i = 0; i < DirectoryHeader.Info1Count; i++)
             {
-                DirectoryInfo1Entries[i] = GCFDirectoryInfo1Entry.Create(headerViewData, ref pointer);
+                DirectoryInfo1Entries[i] = GCFDirectoryInfo1Entry.Create(HeaderView.ViewData, ref pointer);
             }
 
             DirectoryInfo2Entries = new GCFDirectoryInfo2Entry[DirectoryHeader.ItemCount];
             for (int i = 0; i < DirectoryHeader.ItemCount; i++)
             {
-                DirectoryInfo2Entries[i] = GCFDirectoryInfo2Entry.Create(headerViewData, ref pointer);
+                DirectoryInfo2Entries[i] = GCFDirectoryInfo2Entry.Create(HeaderView.ViewData, ref pointer);
             }
 
             DirectoryCopyEntries = new GCFDirectoryCopyEntry[DirectoryHeader.CopyCount];
             for (int i = 0; i < DirectoryHeader.CopyCount; i++)
             {
-                DirectoryCopyEntries[i] = GCFDirectoryCopyEntry.Create(headerViewData, ref pointer);
+                DirectoryCopyEntries[i] = GCFDirectoryCopyEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             DirectoryLocalEntries = new GCFDirectoryLocalEntry[DirectoryHeader.LocalCount];
             for (int i = 0; i < DirectoryHeader.LocalCount; i++)
             {
-                DirectoryLocalEntries[i] = GCFDirectoryLocalEntry.Create(headerViewData, ref pointer);
+                DirectoryLocalEntries[i] = GCFDirectoryLocalEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             pointer = directoryHeaderIndex + (int)DirectoryHeader.DirectorySize;
             if (version < 5)
                 DirectoryMapHeader = null;
             else
-                DirectoryMapHeader = GCFDirectoryMapHeader.Create(headerViewData, ref pointer);
+                DirectoryMapHeader = GCFDirectoryMapHeader.Create(HeaderView.ViewData, ref pointer);
 
             DirectoryMapEntries = new GCFDirectoryMapEntry[DirectoryHeader.ItemCount];
             for (int i = 0; i < DirectoryHeader.ItemCount; i++)
             {
-                DirectoryMapEntries[i] = GCFDirectoryMapEntry.Create(headerViewData, ref pointer);
+                DirectoryMapEntries[i] = GCFDirectoryMapEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
-            ChecksumHeader = GCFChecksumHeader.Create(headerViewData, ref pointer);
+            ChecksumHeader = GCFChecksumHeader.Create(HeaderView.ViewData, ref pointer);
 
             int checksumMapHeaderIndex = pointer;
-            ChecksumMapHeader = GCFChecksumMapHeader.Create(headerViewData, ref pointer);
+            ChecksumMapHeader = GCFChecksumMapHeader.Create(HeaderView.ViewData, ref pointer);
 
             ChecksumMapEntries = new GCFChecksumMapEntry[ChecksumMapHeader.ItemCount];
             for (int i = 0; i < ChecksumMapHeader.ItemCount; i++)
             {
-                ChecksumMapEntries[i] = GCFChecksumMapEntry.Create(headerViewData, ref pointer);
+                ChecksumMapEntries[i] = GCFChecksumMapEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             ChecksumEntries = new GCFChecksumEntry[ChecksumMapHeader.ChecksumCount];
             for (int i = 0; i < ChecksumMapHeader.ChecksumCount; i++)
             {
-                ChecksumEntries[i] = GCFChecksumEntry.Create(headerViewData, ref pointer);
+                ChecksumEntries[i] = GCFChecksumEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             pointer = checksumMapHeaderIndex + (int)ChecksumHeader.ChecksumSize;
@@ -855,7 +858,7 @@ namespace HLLib.Packages.GCF
             if (version < 5)
                 pointer -= 4;
 
-            DataBlockHeader = GCFDataBlockHeader.Create(headerViewData, ref pointer);
+            DataBlockHeader = GCFDataBlockHeader.Create(HeaderView.ViewData, ref pointer);
 
             #endregion
 

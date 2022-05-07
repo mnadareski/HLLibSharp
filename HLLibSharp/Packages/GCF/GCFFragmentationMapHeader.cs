@@ -18,7 +18,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFFragmentationMapHeader object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 4);
 
         /// <summary>
         /// Number of data blocks.

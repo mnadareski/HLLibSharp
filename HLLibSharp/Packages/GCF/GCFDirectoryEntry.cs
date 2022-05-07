@@ -18,7 +18,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFDirectoryEntry object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 7);
 
         /// <summary>
         /// Offset to the directory item name from the end of the directory items.

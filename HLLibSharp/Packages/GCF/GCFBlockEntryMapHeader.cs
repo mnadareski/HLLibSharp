@@ -21,7 +21,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFBlockEntryMapHeader object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 5);
 
         /// <summary>
         /// Number of data blocks.

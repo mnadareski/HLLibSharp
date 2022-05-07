@@ -18,7 +18,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Total size of a GCFChecksumMapHeader object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 4);
 
         /// <summary>
         /// Always 0x14893721
