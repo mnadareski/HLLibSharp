@@ -204,32 +204,31 @@ namespace HLLib.Packages.VPK
 
             while (viewDataStart != viewDirectoryDataEnd)
             {
-                if (!MapString(viewData, viewDataStart, viewDirectoryDataEnd, out _))
+                if (!MapString(viewData, ref viewDataStart, viewDirectoryDataEnd, out int extension))
                     return false;
 
-                string extension = Encoding.ASCII.GetString(viewData, viewDataStart, viewDataEnd - viewDataStart);
-                if (string.IsNullOrEmpty(extension))
+                string extensionString = Encoding.ASCII.GetString(viewData, extension, viewDataStart - extension);
+                if (viewData[extension] == '\0')
                     break;
 
                 while (true)
                 {
-                    if (!MapString(viewData, viewDataStart, viewDirectoryDataEnd, out _))
+                    if (!MapString(viewData, ref viewDataStart, viewDirectoryDataEnd, out int path))
                         return false;
 
-                    string path = Encoding.ASCII.GetString(viewData, viewDataStart, viewDataEnd - viewDataStart);
-                    if (string.IsNullOrEmpty(extension))
+                    string pathString = Encoding.ASCII.GetString(viewData, path, viewDataStart - path);
+                    if (viewData[path] == '\0')
                         break;
 
                     while (true)
                     {
-                        if (!MapString(viewData, viewDataStart, viewDirectoryDataEnd, out _))
+                        if (!MapString(viewData, ref viewDataStart, viewDirectoryDataEnd, out int name))
                             return false;
 
-                        string name = Encoding.ASCII.GetString(viewData, viewDataStart, viewDataEnd - viewDataStart);
-                        if (string.IsNullOrEmpty(extension))
+                        string nameString = Encoding.ASCII.GetString(viewData, name, viewDataStart - name);
+                        if (viewData[name] == '\0')
                             break;
 
-                        VPKDirectoryEntry directoryEntry;
                         if (viewDataStart + VPKDirectoryEntry.ObjectSize > viewDirectoryDataEnd)
                         {
                             Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
@@ -237,7 +236,7 @@ namespace HLLib.Packages.VPK
                         }
 
                         pointer = viewDataStart;
-                        directoryEntry = VPKDirectoryEntry.Create(viewData, ref pointer);
+                        VPKDirectoryEntry directoryEntry = VPKDirectoryEntry.Create(viewData, ref pointer);
                         viewDataStart += VPKDirectoryEntry.ObjectSize;
 
                         int preloadDataPointer = -1;
@@ -274,7 +273,7 @@ namespace HLLib.Packages.VPK
                             Array.Copy(viewData, viewDataStart, preloadData, 0, preloadData.Length);
                         }
 
-                        DirectoryItems.Add(new VPKDirectoryItem(extension, path, name, directoryEntry, preloadData));
+                        DirectoryItems.Add(new VPKDirectoryItem(extensionString, pathString, nameString, directoryEntry, preloadData));
                     }
                 }
             }
@@ -354,18 +353,18 @@ namespace HLLib.Packages.VPK
         /// <param name="viewDirectoryDataEnd">End of the directory data</param>
         /// <param name="viewDataEnd">Output value representing the end of the string</param>
         /// <returns>True if the string could be found, false otherwise</returns>
-        private bool MapString(byte[] viewData, int viewDataStart, int viewDirectoryDataEnd, out int viewDataEnd)
+        private bool MapString(byte[] viewData, ref int viewDataStart, int viewDirectoryDataEnd, out int viewDataEnd)
         {
             viewDataEnd = viewDataStart;
             while (true)
             {
-                if (viewDataEnd == viewDirectoryDataEnd)
+                if (viewDataStart == viewDirectoryDataEnd)
                 {
                     Console.WriteLine("Invalid file: Mapping bounds exceeded while searching for string null terminator.");
                     return false;
                 }
 
-                bool mapped = viewData[viewDataEnd++] == '\0';
+                bool mapped = viewData[viewDataStart++] == '\0';
                 if (mapped)
                     return true;
             }
