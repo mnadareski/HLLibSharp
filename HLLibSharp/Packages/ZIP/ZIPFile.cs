@@ -197,7 +197,7 @@ namespace HLLib.Packages.ZIP
                 byte[] testViewData = testView.ViewData;
                 test = BitConverter.ToUInt32(testViewData, 0);
 
-                Mapping.Unmap(testView);
+                Mapping.Unmap(ref testView);
 
                 switch (test)
                 {
@@ -209,7 +209,7 @@ namespace HLLib.Packages.ZIP
                             pointer = 0;
                             ZIPEndOfCentralDirectoryRecord endOfCentralDirectoryRecord = ZIPEndOfCentralDirectoryRecord.Create(testView.ViewData, ref pointer);
 
-                            Mapping.Unmap(testView);
+                            Mapping.Unmap(ref testView);
 
                             if (!Mapping.Map(ref EndOfCentralDirectoryRecordView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize + endOfCentralDirectoryRecord.CommentLength))
                                 return false;
@@ -230,7 +230,7 @@ namespace HLLib.Packages.ZIP
                             pointer = 0;
                             ZIPFileHeader fileHeader = ZIPFileHeader.Create(testView.ViewData, ref pointer);
 
-                            Mapping.Unmap(testView);
+                            Mapping.Unmap(ref testView);
 
                             offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
                             break;
@@ -243,7 +243,7 @@ namespace HLLib.Packages.ZIP
                             pointer = 0;
                             ZIPLocalFileHeader localFileHeader = ZIPLocalFileHeader.Create(testView.ViewData, ref pointer);
 
-                            Mapping.Unmap(testView);
+                            Mapping.Unmap(ref testView);
 
                             offset += ZIPLocalFileHeader.ObjectSize + localFileHeader.FileNameLength + localFileHeader.ExtraFieldLength + localFileHeader.CompressedSize;
                             break;
@@ -263,9 +263,9 @@ namespace HLLib.Packages.ZIP
         /// <inheritdoc/>
         protected override void UnmapDataStructures()
         {
-            Mapping.Unmap(FileHeaderView);
+            Mapping.Unmap(ref FileHeaderView);
             EndOfCentralDirectoryRecord = null;
-            Mapping.Unmap(EndOfCentralDirectoryRecordView);
+            Mapping.Unmap(ref EndOfCentralDirectoryRecordView);
         }
 
         #endregion
@@ -443,7 +443,7 @@ namespace HLLib.Packages.ZIP
             pointer = 0;
             ZIPLocalFileHeader DirectoryEntry = ZIPLocalFileHeader.Create(directoryEntryView.ViewData, ref pointer);
 
-            Mapping.Unmap(directoryEntryView);
+            Mapping.Unmap(ref directoryEntryView);
 
             if (DirectoryEntry.Signature != HL_ZIP_LOCAL_FILE_HEADER_SIGNATURE)
             {

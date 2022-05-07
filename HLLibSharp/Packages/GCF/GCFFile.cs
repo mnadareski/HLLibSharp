@@ -547,8 +547,8 @@ namespace HLLib.Packages.GCF
                 }
             }
 
-            Mapping.Unmap(currentView);
-            Mapping.Unmap(incrementedView);
+            Mapping.Unmap(ref currentView);
+            Mapping.Unmap(ref incrementedView);
 
             // Commit header changes to mapping.
             long pointer = GCFHeader.ObjectSize;
@@ -896,7 +896,7 @@ namespace HLLib.Packages.GCF
 
             DataBlockHeader = null;
 
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         /// <summary>

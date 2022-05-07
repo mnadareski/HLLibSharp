@@ -18,8 +18,14 @@ namespace HLLib.Streams
     {
         #region Fields
 
+        /// <summary>
+        /// Internal backing file stream
+        /// </summary>
         public System.IO.FileStream InternalStream { get; private set; }
 
+        /// <summary>
+        /// Original file name
+        /// </summary>
         public string OriginalFileName { get; private set; }
 
         #endregion
@@ -34,11 +40,10 @@ namespace HLLib.Streams
             InternalStream = null;
         }
 
-        ~FileStream()
-        {
-            Close();
-            OriginalFileName = null;
-        }
+        /// <summary>
+        /// Destructor
+        /// </summary>
+        ~FileStream() => Close();
 
         #region Descriptors
 

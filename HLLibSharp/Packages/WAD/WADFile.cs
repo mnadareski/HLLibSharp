@@ -151,10 +151,10 @@ namespace HLLib.Packages.WAD
         protected override void UnmapDataStructures()
         {
             Lumps = null;
-            Mapping.Unmap(LumpView);
+            Mapping.Unmap(ref LumpView);
 
             Header = null;
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         #endregion
@@ -279,7 +279,7 @@ namespace HLLib.Packages.WAD
             if (!GetLumpInfo(file, out width, out height, out _, out paletteData, out pixelData, out View view))
                 return false;
 
-            Mapping.Unmap(view);
+            Mapping.Unmap(ref view);
 
             return true;
         }
@@ -348,7 +348,7 @@ namespace HLLib.Packages.WAD
                 }
             }
 
-            Mapping.Unmap(view);
+            Mapping.Unmap(ref view);
 
             int pointer = 0;
             Array.Copy(fileHeader.Serialize(), 0, buffer, pointer, BITMAPFILEHEADER.ObjectSize); pointer += BITMAPFILEHEADER.ObjectSize;

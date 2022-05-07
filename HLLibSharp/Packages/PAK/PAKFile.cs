@@ -182,10 +182,10 @@ namespace HLLib.Packages.PAK
         protected override void UnmapDataStructures()
         {
             DirectoryItems = null;
-            Mapping.Unmap(DirectoryItemView);
+            Mapping.Unmap(ref DirectoryItemView);
 
             Header = null;
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         #endregion

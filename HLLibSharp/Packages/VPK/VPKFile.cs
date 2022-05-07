@@ -343,7 +343,7 @@ namespace HLLib.Packages.VPK
             if (DirectoryItems != null)
                 DirectoryItems = null;
 
-            Mapping.Unmap(View);
+            Mapping.Unmap(ref View);
         }
 
         /// <summary>
@@ -595,7 +595,7 @@ namespace HLLib.Packages.VPK
                         Array.Copy(directoryItem.PreloadData, 0, lpBuffer, 0, directoryItem.DirectoryEntry.PreloadBytes);
                         Array.Copy(view.ViewData, 0, lpBuffer, directoryItem.DirectoryEntry.PreloadBytes, directoryItem.DirectoryEntry.EntryLength);
 
-                        Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Unmap(view);
+                        Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Unmap(ref view);
 
                         stream = new MemoryStream(lpBuffer, bufferSize);
                     }

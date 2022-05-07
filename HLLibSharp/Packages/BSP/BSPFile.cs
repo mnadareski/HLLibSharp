@@ -178,10 +178,10 @@ namespace HLLib.Packages.BSP
         protected override void UnmapDataStructures()
         {
             TextureHeader = null;
-            Mapping.Unmap(TextureView);
+            Mapping.Unmap(ref TextureView);
 
             Header = null;
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         /// <summary>

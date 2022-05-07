@@ -375,7 +375,7 @@ namespace HLLib.Packages.NCF
             ChecksumMapEntries = null;
             ChecksumEntries = null;
 
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         /// <summary>

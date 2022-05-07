@@ -19,6 +19,9 @@ namespace HLLib.Streams
     {
         #region Fields
 
+        /// <summary>
+        /// Internal backing memory stream
+        /// </summary>
         public System.IO.MemoryStream InternalStream { get; private set; }
 
         #endregion

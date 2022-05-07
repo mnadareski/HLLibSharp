@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using HLLib.Directory;
 
-// TODO: Add GUID for map/unmap parenting
 namespace HLLib.Mappings
 {
     /// <summary>
@@ -22,6 +21,11 @@ namespace HLLib.Mappings
     public abstract class Mapping
     {
         #region Fields
+
+        /// <summary>
+        /// Unique identifier for this mapping
+        /// </summary>
+        public Guid Identifier { get; private set; }
 
         /// <summary>
         /// List of registered views in the mapping
@@ -35,6 +39,7 @@ namespace HLLib.Mappings
         /// </summary>
         public Mapping()
         {
+            Identifier = Guid.NewGuid();
             Views = null;
         }
 
@@ -141,13 +146,13 @@ namespace HLLib.Mappings
                 return false;
             }
 
-            if (view != null && view.Mapping != this)
+            if (view != null && view.Mapping.Identifier != Identifier)
             {
                 Console.WriteLine("View does not belong to mapping.");
                 return false;
             }
 
-            if (Unmap(view) && MapInternal(offset, length, ref view))
+            if (Unmap(ref view) && MapInternal(offset, length, ref view))
             {
                 Views.Add(view);
                 return true;
@@ -161,12 +166,12 @@ namespace HLLib.Mappings
         /// </summary>
         /// <param name="view">Possibly existing view to unmap</param>
         /// <returns>True if the unmapping was successful, false otherwise</returns>
-        public bool Unmap(View view)
+        public bool Unmap(ref View view)
         {
-            if (view == null)
+            if (view == null || Views == null)
                 return true;
 
-            if (Opened && view.Mapping == this)
+            if (Opened && view.Mapping.Identifier == Identifier)
             {
                 for (int i = 0; i < Views.Count; i++)
                 {
@@ -200,7 +205,7 @@ namespace HLLib.Mappings
         /// <returns>True if changes could be commited, false otherwise</returns>
         public bool Commit(View view, long offset, long length)
         {
-            if (!Opened || view.Mapping != this)
+            if (!Opened || view.Mapping.Identifier != Identifier)
             {
                 Console.WriteLine("View does not belong to mapping.");
                 return false;

@@ -296,18 +296,18 @@ namespace HLLib.Packages.XZP
         protected override void UnmapDataStructures()
         {
             Footer = null;
-            Mapping.Unmap(FooterView);
+            Mapping.Unmap(ref FooterView);
 
             DirectoryItems = null;
-            Mapping.Unmap(DirectoryItemView);
+            Mapping.Unmap(ref DirectoryItemView);
 
             DirectoryEntries = null;
             PreloadDirectoryEntries = null;
             PreloadDirectoryMappings = null;
-            Mapping.Unmap(DirectoryEntryView);
+            Mapping.Unmap(ref DirectoryEntryView);
 
             Header = null;
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         #endregion

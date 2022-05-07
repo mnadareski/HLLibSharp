@@ -21,22 +21,49 @@ namespace HLLib.Streams
     {
         #region Fields
 
+        /// <summary>
+        /// Source GCF package
+        /// </summary>
         public GCFFile Package { get; private set; }
 
+        /// <summary>
+        /// Package file ID
+        /// </summary>
         public uint FileID { get; private set; }
 
+        /// <summary>
+        /// Block entry index within the package
+        /// </summary>
         public uint BlockEntryIndex { get; private set; }
 
+        /// <summary>
+        /// Block entry offset within the package
+        /// </summary>
         public long BlockEntryOffset { get; private set; }
-
+        
+        /// <summary>
+        /// Data block index within the package
+        /// </summary>
         public uint DataBlockIndex { get; private set; }
 
+        /// <summary>
+        /// Data block offset within the package
+        /// </summary>
         public long DataBlockOffset { get; private set; }
 
+        /// <summary>
+        /// Current internal pointer
+        /// </summary>
         public long InternalPointer { get; private set; }
 
+        /// <summary>
+        /// Total internal length
+        /// </summary>
         public long InternalLength { get; private set; }
 
+        /// <summary>
+        /// View representing the data
+        /// </summary>
         private View View;
 
         #endregion
@@ -126,7 +153,7 @@ namespace HLLib.Streams
             InternalOpened = false;
             FileMode = FileModeFlags.HL_MODE_INVALID;
 
-            Package.Mapping.Unmap(View);
+            Package.Mapping.Unmap(ref View);
 
             InternalPointer = 0;
             InternalLength = 0;
@@ -376,7 +403,7 @@ namespace HLLib.Streams
                 if (BlockEntryOffset + DataBlockOffset < Package.DirectoryEntries[FileID].ItemSize)
                     Console.WriteLine($"Unexpected end of GCF stream ({BlockEntryOffset + DataBlockOffset} B of {Package.DirectoryEntries[FileID].ItemSize} B).  Has the GCF file been completely acquired?");
 
-                Package.Mapping.Unmap(View);
+                Package.Mapping.Unmap(ref View);
                 return false;
             }
 

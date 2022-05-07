@@ -29,18 +29,39 @@ namespace HLLib.Streams
 
         #region Fields
 
+        /// <summary>
+        /// Source mapping
+        /// </summary>
         public Mapping Mapping { get; private set; }
 
+        /// <summary>
+        /// Mapping offset
+        /// </summary>
         public long MappingOffset { get; private set; }
 
+        /// <summary>
+        /// Mapping size
+        /// </summary>
         public long MappingSize { get; private set; }
 
+        /// <summary>
+        /// View size
+        /// </summary>
         public long ViewSize { get; private set; }
 
+        /// <summary>
+        /// Current internal pointer
+        /// </summary>
         public long InternalPointer { get; private set; }
 
+        /// <summary>
+        /// Total internal length
+        /// </summary>
         public long InternalLength { get; private set; }
 
+        /// <summary>
+        /// View representing the data
+        /// </summary>
         private View View;
 
         #endregion

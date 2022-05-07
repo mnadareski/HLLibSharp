@@ -280,25 +280,25 @@ namespace HLLib.Packages.VBSP
                 long offset = Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset;
                 while (offset < Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length - 4)
                 {
-                    View pTestView = null;
+                    View testView = null;
 
-                    if (!Mapping.Map(ref pTestView, offset, 4))
+                    if (!Mapping.Map(ref testView, offset, 4))
                         return false;
 
-                    test = BitConverter.ToInt32(pTestView.ViewData, 0);
+                    test = BitConverter.ToInt32(testView.ViewData, 0);
 
-                    Mapping.Unmap(pTestView);
+                    Mapping.Unmap(ref testView);
 
                     switch (test)
                     {
                         case HL_VBSP_ZIP_END_OF_CENTRAL_DIRECTORY_RECORD_SIGNATURE:
-                            if (!Mapping.Map(ref pTestView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
+                            if (!Mapping.Map(ref testView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
                                 return false;
 
                             pointer = 0;
-                            ZIPEndOfCentralDirectoryRecord endOfCentralDirRecord = ZIPEndOfCentralDirectoryRecord.Create(pTestView.ViewData, ref pointer);
+                            ZIPEndOfCentralDirectoryRecord endOfCentralDirRecord = ZIPEndOfCentralDirectoryRecord.Create(testView.ViewData, ref pointer);
 
-                            Mapping.Unmap(pTestView);
+                            Mapping.Unmap(ref testView);
 
                             if (!Mapping.Map(ref EndOfCentralDirectoryRecordView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
                                 return false;
@@ -311,24 +311,24 @@ namespace HLLib.Packages.VBSP
 
                             return true;
                         case HL_VBSP_ZIP_FILE_HEADER_SIGNATURE:
-                            if (!Mapping.Map(ref pTestView, offset, ZIPFileHeader.ObjectSize))
+                            if (!Mapping.Map(ref testView, offset, ZIPFileHeader.ObjectSize))
                                 return false;
 
                             pointer = 0;
-                            ZIPFileHeader fileHeader = ZIPFileHeader.Create(pTestView.ViewData, ref pointer);
+                            ZIPFileHeader fileHeader = ZIPFileHeader.Create(testView.ViewData, ref pointer);
 
-                            Mapping.Unmap(pTestView);
+                            Mapping.Unmap(ref testView);
 
                             offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
                             break;
                         case HL_VBSP_ZIP_LOCAL_FILE_HEADER_SIGNATURE:
-                            if (!Mapping.Map(ref pTestView, offset, ZIPLocalFileHeader.ObjectSize))
+                            if (!Mapping.Map(ref testView, offset, ZIPLocalFileHeader.ObjectSize))
                                 return false;
 
                             pointer = 0;
-                            ZIPLocalFileHeader localFileHeader = ZIPLocalFileHeader.Create(pTestView.ViewData, ref pointer);
+                            ZIPLocalFileHeader localFileHeader = ZIPLocalFileHeader.Create(testView.ViewData, ref pointer);
 
-                            Mapping.Unmap(pTestView);
+                            Mapping.Unmap(ref testView);
 
                             offset += ZIPLocalFileHeader.ObjectSize + localFileHeader.FileNameLength + localFileHeader.ExtraFieldLength + localFileHeader.CompressedSize;
                             break;
@@ -348,13 +348,13 @@ namespace HLLib.Packages.VBSP
         /// <inheritdoc/>
         protected override void UnmapDataStructures()
         {
-            Mapping.Unmap(FileHeaderView);
+            Mapping.Unmap(ref FileHeaderView);
 
             EndOfCentralDirectoryRecord = null;
-            Mapping.Unmap(EndOfCentralDirectoryRecordView);
+            Mapping.Unmap(ref EndOfCentralDirectoryRecordView);
 
             Header = null;
-            Mapping.Unmap(HeaderView);
+            Mapping.Unmap(ref HeaderView);
         }
 
         /// <summary>
@@ -629,7 +629,7 @@ namespace HLLib.Packages.VBSP
                 pointer = 0;
                 ZIPLocalFileHeader directoryEntry = ZIPLocalFileHeader.Create(directoryEntryView.ViewData, ref pointer);
 
-                Mapping.Unmap(directoryEntryView);
+                Mapping.Unmap(ref directoryEntryView);
 
                 if (directoryEntry.Signature != HL_VBSP_ZIP_LOCAL_FILE_HEADER_SIGNATURE)
                 {
@@ -667,7 +667,7 @@ namespace HLLib.Packages.VBSP
                 Array.Copy(lumpView.ViewData, 0, buffer, LMPHeader.ObjectSize, Header.Lumps[id].Length);
                 stream = new MemoryStream(buffer, bufferSize);
 
-                Mapping.Unmap(lumpView);
+                Mapping.Unmap(ref lumpView);
             }
 
             return true;
