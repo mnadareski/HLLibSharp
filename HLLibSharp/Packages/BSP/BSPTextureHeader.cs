@@ -9,13 +9,17 @@
  * version.
  */
 
+using System;
+
 namespace HLLib.Packages.BSP
 {
-    using System;
-    using System.Runtime.InteropServices;
-
     public class BSPTextureHeader
     {
+        /// <summary>
+        /// Total size of a BSPTextureHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + (4 * 1);
+
         /// <summary>
         /// Texture count
         /// </summary>
@@ -31,7 +35,7 @@ namespace HLLib.Packages.BSP
             BSPTextureHeader textureHeader = new BSPTextureHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(textureHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             textureHeader.TextureCount = BitConverter.ToUInt32(data, offset); offset += 4;

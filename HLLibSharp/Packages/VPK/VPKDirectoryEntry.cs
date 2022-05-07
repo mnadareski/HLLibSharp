@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.VPK
 {
     public class VPKDirectoryEntry
     {
+        /// <summary>
+        /// Total size of a VPKDirectoryEntry object
+        /// </summary>
+        public const int ObjectSize = 4 + 2 + 2 + 4 + 4 + 2;
+
         public uint CRC { get; set; }
 
         public ushort PreloadBytes { get; set; }
@@ -36,7 +40,7 @@ namespace HLLib.Packages.VPK
             VPKDirectoryEntry directoryEntry = new VPKDirectoryEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryEntry.CRC = BitConverter.ToUInt32(data, offset); offset += 4;
@@ -52,7 +56,7 @@ namespace HLLib.Packages.VPK
         public byte[] Serialize()
         {
             int offset = 0;
-            byte[] data = new byte[Marshal.SizeOf(new VPKDirectoryEntry())];
+            byte[] data = new byte[ObjectSize];
 
             Array.Copy(BitConverter.GetBytes(CRC), 0, data, offset, 4); offset += 4;
             Array.Copy(BitConverter.GetBytes(PreloadBytes), 0, data, offset, 2); offset += 2;

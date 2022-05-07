@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
@@ -19,6 +18,11 @@ namespace HLLib.Packages.GCF
     /// </remarks>
     public class GCFBlockEntryMap
     {
+        /// <summary>
+        /// Total size of a GCFBlockEntryMap object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         /// <summary>
         /// The previous block entry.  (N/A if == BlockCount.)
         /// </summary>
@@ -34,7 +38,7 @@ namespace HLLib.Packages.GCF
             GCFBlockEntryMap blockEntryMap = new GCFBlockEntryMap();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(blockEntryMap))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             blockEntryMap.PreviousBlockEntryIndex = BitConverter.ToUInt32(data, offset); offset += 4;

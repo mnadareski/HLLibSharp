@@ -11,12 +11,16 @@
 
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFHeader
     {
+        /// <summary>
+        /// Total size of a GCFHeader object
+        /// </summary>
+        public const int ObjectSize = (4 * 11);
+
         /// <summary>
         /// Always 0x00000001
         /// </summary>
@@ -78,8 +82,8 @@ namespace HLLib.Packages.GCF
 
             // Check to see if the data is valid
             if (data == null
-                || data.Length < Marshal.SizeOf(header)
-                || data.Take(Marshal.SizeOf(header)).All(b => b == 0x00))
+                || data.Length < ObjectSize
+                || data.Take(ObjectSize).All(b => b == 0x00))
             {
                 return null;
             }

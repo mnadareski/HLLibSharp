@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.XZP
 {
 	public class XZPHeader
     {
+		/// <summary>
+		/// Total size of a XZPHeader object
+		/// </summary>
+		public const int ObjectSize = 4 * 9;
+
 		public string Signature { get; set; }
 
 		public uint Version { get; set; }
@@ -40,7 +44,7 @@ namespace HLLib.Packages.XZP
 			XZPHeader header = new XZPHeader();
 
 			// Check to see if the data is valid
-			if (data == null || data.Length < Marshal.SizeOf(header))
+			if (data == null || data.Length < ObjectSize)
 				return null;
 
 			header.Signature = Encoding.ASCII.GetString(data, offset, 4); offset += 4;

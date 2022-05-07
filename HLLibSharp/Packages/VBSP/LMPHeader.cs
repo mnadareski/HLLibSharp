@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.VBSP
 {
     public class LMPHeader
     {
+        /// <summary>
+        /// Total size of a LMPHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4 + 4 + 4;
+
         public int LumpOffset { get; set; }
 
         public int LumpID { get; set; }
@@ -31,7 +35,7 @@ namespace HLLib.Packages.VBSP
             LMPHeader header = new LMPHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(header))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             header.LumpOffset = BitConverter.ToInt32(data, offset); offset += 4;
@@ -46,7 +50,7 @@ namespace HLLib.Packages.VBSP
         public byte[] Serialize()
         {
             int offset = 0;
-            byte[] data = new byte[Marshal.SizeOf(new LMPHeader())];
+            byte[] data = new byte[ObjectSize];
 
             Array.Copy(BitConverter.GetBytes(LumpOffset), 0, data, offset, 4); offset += 4;
             Array.Copy(BitConverter.GetBytes(LumpID), 0, data, offset, 4); offset += 4;

@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text;
 using HLLib.Directory;
 using HLLib.Mappings;
@@ -69,7 +68,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         #endregion
 
@@ -98,7 +97,7 @@ namespace HLLib.Packages.GCF
         /// <summary>
         /// Deserialized fragmentation map data
         /// </summary>
-        public GCFFragmentationMap[] FragmentationMap { get; private set; }
+        public GCFFragmentationMap[] FragmentationMaps { get; private set; }
 
         /// <summary>
         /// Deserialized block entry map header data
@@ -114,7 +113,7 @@ namespace HLLib.Packages.GCF
         /// <remarks>
         /// Part of version 5 but not version 6.
         /// </remarks>
-        public GCFBlockEntryMap[] BlockEntryMap { get; private set; }
+        public GCFBlockEntryMap[] BlockEntryMaps { get; private set; }
 
         /// <summary>
         /// Deserialized directory header data
@@ -205,10 +204,10 @@ namespace HLLib.Packages.GCF
             BlockEntries = null;
 
             FragmentationMapHeader = null;
-            FragmentationMap = null;
+            FragmentationMaps = null;
 
             BlockEntryMapHeader = null;
-            BlockEntryMap = null;
+            BlockEntryMaps = null;
 
             DirectoryHeader = null;
             DirectoryEntries = null;
@@ -336,14 +335,14 @@ namespace HLLib.Packages.GCF
 
                         while (currentDataBlockIndex < dataBlockTerminator && currentBlockEntrySize < BlockEntries[currentBlockEntryIndex].FileDataSize)
                         {
-                            uint uiNextDataBlockIndex = FragmentationMap[currentDataBlockIndex].NextDataBlockIndex;
+                            uint uiNextDataBlockIndex = FragmentationMaps[currentDataBlockIndex].NextDataBlockIndex;
 
                             // If this data block is not ordered sequentially, swap it with the sequential data block.
                             if (currentDataBlockIndex != increment)
                             {
                                 // Make sure we can map the two data blocks before we alter any tables.
-                                if (Mapping.Map(currentView, DataBlockHeader.FirstBlockOffset + currentDataBlockIndex * DataBlockHeader.BlockSize, (int)DataBlockHeader.BlockSize) &&
-                                    Mapping.Map(incrementedView, DataBlockHeader.FirstBlockOffset + increment * DataBlockHeader.BlockSize, (int)DataBlockHeader.BlockSize))
+                                if (Mapping.Map(ref currentView, DataBlockHeader.FirstBlockOffset + currentDataBlockIndex * DataBlockHeader.BlockSize, (int)DataBlockHeader.BlockSize) &&
+                                    Mapping.Map(ref incrementedView, DataBlockHeader.FirstBlockOffset + increment * DataBlockHeader.BlockSize, (int)DataBlockHeader.BlockSize))
                                 {
                                     // Search to see if the sequential data block is in use, we only need to check
                                     // files after ours in the directory because everything before is sequential.
@@ -365,7 +364,7 @@ namespace HLLib.Packages.GCF
 
                                                     BlockEntries[uiIncrementedBlockEntryIndex].FirstDataBlockIndex = currentDataBlockIndex;
 
-                                                    FragmentationMap[currentDataBlockIndex].NextDataBlockIndex = FragmentationMap[uiIncrementedDataBlockIndex].NextDataBlockIndex;
+                                                    FragmentationMaps[currentDataBlockIndex].NextDataBlockIndex = FragmentationMaps[uiIncrementedDataBlockIndex].NextDataBlockIndex;
 
                                                     // We found it.
                                                     found = true;
@@ -386,10 +385,10 @@ namespace HLLib.Packages.GCF
                                                             // If the data blocks are side by side, prevent circular maps.
                                                             if (increment != uiNextDataBlockIndex)
                                                             {
-                                                                FragmentationMap[uiIncrementedLastDataBlockIndex].NextDataBlockIndex = currentDataBlockIndex;
+                                                                FragmentationMaps[uiIncrementedLastDataBlockIndex].NextDataBlockIndex = currentDataBlockIndex;
                                                             }
 
-                                                            FragmentationMap[currentDataBlockIndex].NextDataBlockIndex = FragmentationMap[uiIncrementedDataBlockIndex].NextDataBlockIndex;
+                                                            FragmentationMaps[currentDataBlockIndex].NextDataBlockIndex = FragmentationMaps[uiIncrementedDataBlockIndex].NextDataBlockIndex;
 
                                                             // We found it.
                                                             found = true;
@@ -398,7 +397,7 @@ namespace HLLib.Packages.GCF
 
                                                         uiIncrementedLastDataBlockIndex = uiIncrementedDataBlockIndex;
 
-                                                        uiIncrementedDataBlockIndex = FragmentationMap[uiIncrementedDataBlockIndex].NextDataBlockIndex;
+                                                        uiIncrementedDataBlockIndex = FragmentationMaps[uiIncrementedDataBlockIndex].NextDataBlockIndex;
                                                         uiIncrementedBlockEntrySize += DataBlockHeader.BlockSize;
                                                     }
                                                 }
@@ -432,15 +431,15 @@ namespace HLLib.Packages.GCF
                                     if (lastDataBlockIndex == DataBlockHeader.BlockCount)
                                         BlockEntries[currentBlockEntryIndex].FirstDataBlockIndex = increment;
                                     else
-                                        FragmentationMap[lastDataBlockIndex].NextDataBlockIndex = increment;
+                                        FragmentationMaps[lastDataBlockIndex].NextDataBlockIndex = increment;
 
                                     if (increment != DataBlockHeader.BlockCount)
                                     {
                                         // If the data blocks are side by side, prevent circular maps.
                                         if (increment != uiNextDataBlockIndex)
-                                            FragmentationMap[increment].NextDataBlockIndex = uiNextDataBlockIndex;
+                                            FragmentationMaps[increment].NextDataBlockIndex = uiNextDataBlockIndex;
                                         else
-                                            FragmentationMap[increment].NextDataBlockIndex = currentDataBlockIndex;
+                                            FragmentationMaps[increment].NextDataBlockIndex = currentDataBlockIndex;
                                     }
                                 }
                                 else
@@ -454,7 +453,7 @@ namespace HLLib.Packages.GCF
                             lastDataBlockIndex = increment;
                             increment++;
 
-                            currentDataBlockIndex = FragmentationMap[lastDataBlockIndex].NextDataBlockIndex;
+                            currentDataBlockIndex = FragmentationMaps[lastDataBlockIndex].NextDataBlockIndex;
                             currentBlockEntrySize += DataBlockHeader.BlockSize;
 
                             // Update the progress.
@@ -496,7 +495,7 @@ namespace HLLib.Packages.GCF
                 // Fill in the unused fragmentation map entries with uiBlockCount.
                 for (uint i = increment; i < FragmentationMapHeader.BlockCount; i++)
                 {
-                    FragmentationMap[i].NextDataBlockIndex = FragmentationMapHeader.BlockCount;
+                    FragmentationMaps[i].NextDataBlockIndex = FragmentationMapHeader.BlockCount;
                 }
             }
             else
@@ -518,7 +517,7 @@ namespace HLLib.Packages.GCF
                             while (dataBlockIndex < dataBlockTerminator && blockEntrySize < BlockEntries[blockEntryIndex].FileDataSize)
                             {
                                 touched[dataBlockIndex] = true;
-                                dataBlockIndex = FragmentationMap[dataBlockIndex].NextDataBlockIndex;
+                                dataBlockIndex = FragmentationMaps[dataBlockIndex].NextDataBlockIndex;
                                 blockEntrySize += DataBlockHeader.BlockSize;
                             }
 
@@ -543,7 +542,7 @@ namespace HLLib.Packages.GCF
 
                             first = true;
                         }
-                        FragmentationMap[i].NextDataBlockIndex = FragmentationMapHeader.BlockCount;
+                        FragmentationMaps[i].NextDataBlockIndex = FragmentationMapHeader.BlockCount;
                     }
                 }
             }
@@ -552,12 +551,13 @@ namespace HLLib.Packages.GCF
             Mapping.Unmap(incrementedView);
 
             // Commit header changes to mapping.
-            long pointer = Marshal.SizeOf(Header);
-            Mapping.Commit(HeaderView, pointer, Marshal.SizeOf(new GCFBlockEntry()) * BlockEntryHeader.BlockCount);
-            pointer += Marshal.SizeOf(new GCFBlockEntry()) * BlockEntryHeader.BlockCount;
-            Mapping.Commit(HeaderView, pointer, Marshal.SizeOf(new GCFFragmentationMapHeader()));
-            pointer += Marshal.SizeOf(new GCFFragmentationMapHeader());
-            Mapping.Commit(HeaderView, pointer, Marshal.SizeOf(new GCFFragmentationMap()) * FragmentationMapHeader.BlockCount);
+            long pointer = GCFHeader.ObjectSize;
+            Mapping.Commit(HeaderView, pointer, GCFBlockEntry.ObjectSize * BlockEntryHeader.BlockCount);
+            pointer += GCFBlockEntry.ObjectSize * BlockEntryHeader.BlockCount;
+            Mapping.Commit(HeaderView, pointer, GCFFragmentationMapHeader.ObjectSize);
+            pointer += GCFFragmentationMapHeader.ObjectSize;
+            Mapping.Commit(HeaderView, pointer, GCFFragmentationMap.ObjectSize * FragmentationMapHeader.BlockCount);
+            pointer += GCFFragmentationMap.ObjectSize;
 
             return !error;
         }
@@ -600,7 +600,7 @@ namespace HLLib.Packages.GCF
                         blocksUsed++;
                         lastDataBlockIndex = dataBlockIndex;
 
-                        dataBlockIndex = FragmentationMap[dataBlockIndex].NextDataBlockIndex;
+                        dataBlockIndex = FragmentationMaps[dataBlockIndex].NextDataBlockIndex;
 
                         blockEntrySize += DataBlockHeader.BlockSize;
                     }
@@ -636,13 +636,13 @@ namespace HLLib.Packages.GCF
 
             #region Header
 
-            if (Marshal.SizeOf(Header) > Mapping.MappingSize)
+            if (GCFHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(Header)))
+            if (!Mapping.Map(ref HeaderView, 0, GCFHeader.ObjectSize))
                 return false;
 
             Header = GCFHeader.Create(headerViewData, ref pointer);
@@ -659,29 +659,27 @@ namespace HLLib.Packages.GCF
             }
 
             version = Header.MinorVersion;
-            headerSize += Marshal.SizeOf(Header);
+            headerSize += GCFHeader.ObjectSize;
 
             #endregion
 
             #region Block entries
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(BlockEntryHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, GCFBlockEntryHeader.ObjectSize))
                 return false;
 
             BlockEntryHeader = GCFBlockEntryHeader.Create(headerViewData, ref pointer);
-
-            headerSize += Marshal.SizeOf(BlockEntryHeader) + (BlockEntryHeader.BlockCount * Marshal.SizeOf(BlockEntries[0]));
+            headerSize += GCFBlockEntryHeader.ObjectSize + (BlockEntryHeader.BlockCount * GCFBlockEntry.ObjectSize);
 
             #endregion
 
             #region Fragmentation map
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(FragmentationMapHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, GCFFragmentationMapHeader.ObjectSize))
                 return false;
 
             FragmentationMapHeader = GCFFragmentationMapHeader.Create(headerViewData, ref pointer);
-
-            headerSize += Marshal.SizeOf(FragmentationMapHeader) + FragmentationMapHeader.BlockCount * Marshal.SizeOf(FragmentationMap);
+            headerSize += GCFFragmentationMapHeader.ObjectSize + (FragmentationMapHeader.BlockCount * GCFFragmentationMap.ObjectSize);
 
             #endregion
 
@@ -689,52 +687,43 @@ namespace HLLib.Packages.GCF
 
             if (version < 6)
             {
-                if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(BlockEntryMapHeader)))
+                if (!Mapping.Map(ref HeaderView, headerSize, GCFBlockEntryMapHeader.ObjectSize))
                     return false;
 
                 BlockEntryMapHeader = GCFBlockEntryMapHeader.Create(headerViewData, ref pointer);
-
-                headerSize += Marshal.SizeOf(BlockEntryMapHeader) + BlockEntryMapHeader.BlockCount * Marshal.SizeOf(BlockEntryMap[0]);
+                headerSize += GCFBlockEntryMapHeader.ObjectSize + (BlockEntryMapHeader.BlockCount * GCFBlockEntryMap.ObjectSize);
             }
 
             #endregion
 
             #region Directory
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(DirectoryHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, GCFDirectoryHeader.ObjectSize))
                 return false;
 
             DirectoryHeader = GCFDirectoryHeader.Create(headerViewData, ref pointer);
 
-            headerSize += DirectoryHeader.DirectorySize;/*Marshal.SizeOf(DirectoryHeader);
-                        + DirectoryHeader.ItemCount * Marshal.SizeOf(DirectoryEntry)
-                        + DirectoryHeader.NameSize
-                        + DirectoryHeader.Info1Count * Marshal.SizeOf(DirectoryInfo1Entry)
-                        + DirectoryHeader.ItemCount * Marshal.SizeOf(DirectoryInfo2Entry)
-                        + DirectoryHeader.CopyCount * Marshal.SizeOf(DirectoryCopyEntry)
-                        + DirectoryHeader.LocalCount * Marshal.SizeOf(DirectoryLocalEntry);*/
-
+            headerSize += DirectoryHeader.DirectorySize;
             if (version >= 5)
-                headerSize += Marshal.SizeOf(DirectoryMapHeader);
+                headerSize += GCFDirectoryHeader.ObjectSize;
 
-            headerSize += DirectoryHeader.ItemCount * Marshal.SizeOf(DirectoryMapEntries[0]);
+            headerSize += DirectoryHeader.ItemCount * GCFDirectoryMapEntry.ObjectSize;
 
             #endregion
 
             #region Checksums
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(ChecksumHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, GCFChecksumHeader.ObjectSize))
                 return false;
 
             ChecksumHeader = GCFChecksumHeader.Create(headerViewData, ref pointer);
-
-            headerSize += Marshal.SizeOf(ChecksumHeader) + ChecksumHeader.ChecksumSize;
+            headerSize += GCFChecksumHeader.ObjectSize + ChecksumHeader.ChecksumSize;
 
             #endregion
 
             #region Data blocks
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(DataBlockHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, GCFDataBlockHeader.ObjectSize))
                 return false;
 
             DataBlockHeader = GCFDataBlockHeader.Create(headerViewData, ref pointer);
@@ -752,15 +741,15 @@ namespace HLLib.Packages.GCF
 
             // See note below.
             if (version < 5)
-                headerSize += Marshal.SizeOf(DataBlockHeader) - 4;
+                headerSize += GCFDataBlockHeader.ObjectSize - 4;
             else
-                headerSize += Marshal.SizeOf(DataBlockHeader);
+                headerSize += GCFDataBlockHeader.ObjectSize;
 
             #endregion
 
             #region Map the header.
 
-            if (!Mapping.Map(HeaderView, 0, (int)headerSize))
+            if (!Mapping.Map(ref HeaderView, 0, (int)headerSize))
                 return false;
 
             pointer = 0;
@@ -775,25 +764,25 @@ namespace HLLib.Packages.GCF
             }
 
             FragmentationMapHeader = GCFFragmentationMapHeader.Create(headerViewData, ref pointer);
-            FragmentationMap = new GCFFragmentationMap[FragmentationMapHeader.BlockCount];
+            FragmentationMaps = new GCFFragmentationMap[FragmentationMapHeader.BlockCount];
             for (int i = 0; i < FragmentationMapHeader.BlockCount; i++)
             {
-                FragmentationMap[i] = GCFFragmentationMap.Create(headerViewData, ref pointer);
+                FragmentationMaps[i] = GCFFragmentationMap.Create(headerViewData, ref pointer);
             }
 
             if (version < 6)
             {
                 BlockEntryMapHeader = GCFBlockEntryMapHeader.Create(headerViewData, ref pointer);
-                BlockEntryMap = new GCFBlockEntryMap[BlockEntryMapHeader.BlockCount];
+                BlockEntryMaps = new GCFBlockEntryMap[BlockEntryMapHeader.BlockCount];
                 for (int i = 0; i < BlockEntryMapHeader.BlockCount; i++)
                 {
-                    BlockEntryMap[i] = GCFBlockEntryMap.Create(headerViewData, ref pointer);
+                    BlockEntryMaps[i] = GCFBlockEntryMap.Create(headerViewData, ref pointer);
                 }
             }
             else
             {
                 BlockEntryMapHeader = null;
-                BlockEntryMap = null;
+                BlockEntryMaps = null;
             }
 
             int directoryHeaderIndex = pointer;
@@ -884,10 +873,10 @@ namespace HLLib.Packages.GCF
             BlockEntries = null;
 
             FragmentationMapHeader = null;
-            FragmentationMap = null;
+            FragmentationMaps = null;
 
             BlockEntryMapHeader = null;
-            BlockEntryMap = null;
+            BlockEntryMaps = null;
 
             DirectoryHeader = null;
             DirectoryEntries = null;

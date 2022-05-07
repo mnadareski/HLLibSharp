@@ -25,8 +25,6 @@ namespace HLLib.Streams
 
         public uint FileID { get; private set; }
 
-        public View View { get; private set; }
-
         public uint BlockEntryIndex { get; private set; }
 
         public long BlockEntryOffset { get; private set; }
@@ -38,6 +36,8 @@ namespace HLLib.Streams
         public long InternalPointer { get; private set; }
 
         public long InternalLength { get; private set; }
+
+        private View View;
 
         #endregion
 
@@ -351,7 +351,7 @@ namespace HLLib.Streams
                 while ((pointer >= BlockEntryOffset + DataBlockOffset + length) && (DataBlockIndex < uiDataBlockTerminator && DataBlockOffset < Package.BlockEntries[BlockEntryIndex].FileDataSize))
                 {
                     // Get the next data block fragment.
-                    DataBlockIndex = Package.FragmentationMap[DataBlockIndex].NextDataBlockIndex;
+                    DataBlockIndex = Package.FragmentationMaps[DataBlockIndex].NextDataBlockIndex;
                     DataBlockOffset += Package.DataBlockHeader.BlockSize;
 
                     length = (int)(DataBlockOffset + Package.DataBlockHeader.BlockSize > Package.BlockEntries[BlockEntryIndex].FileDataSize ? Package.BlockEntries[BlockEntryIndex].FileDataSize - DataBlockOffset : Package.DataBlockHeader.BlockSize);
@@ -380,7 +380,7 @@ namespace HLLib.Streams
                 return false;
             }
 
-            return Package.Mapping.Map(View, Package.DataBlockHeader.FirstBlockOffset + DataBlockIndex * Package.DataBlockHeader.BlockSize, length);
+            return Package.Mapping.Map(ref View, Package.DataBlockHeader.FirstBlockOffset + DataBlockIndex * Package.DataBlockHeader.BlockSize, length);
         }
 
         #endregion

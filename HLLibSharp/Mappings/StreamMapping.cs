@@ -89,9 +89,8 @@ namespace HLLib.Mappings
         #region Mapping
 
         /// <inheritdoc/>
-        protected override bool MapInternal(long offset, int length, out View view)
+        protected override bool MapInternal(long offset, int length, ref View view)
         {
-            view = null;
             if (!Opened)
                 return false;
 

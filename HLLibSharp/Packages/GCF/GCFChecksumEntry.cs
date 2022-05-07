@@ -12,10 +12,14 @@
 namespace HLLib.Packages.GCF
 {
     using System;
-    using System.Runtime.InteropServices;
 
     public class GCFChecksumEntry
     {
+        /// <summary>
+        /// Total size of a GCFChecksumEntry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// Checksum.
         /// </summary>
@@ -26,7 +30,7 @@ namespace HLLib.Packages.GCF
             GCFChecksumEntry checksumEntry = new GCFChecksumEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(checksumEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             checksumEntry.Checksum = BitConverter.ToUInt32(data, offset); offset += 4;

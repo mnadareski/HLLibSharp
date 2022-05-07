@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.PAK
 {
     public class PAKDirectoryItem
     {
+        /// <summary>
+        /// Total size of a PAKDirectoryItem object
+        /// </summary>
+        public const int ObjectSize = 56 + 4 + 4;
+
         /// <summary>
         /// Item Name
         /// </summary>
@@ -37,7 +41,7 @@ namespace HLLib.Packages.PAK
             PAKDirectoryItem directoryItem = new PAKDirectoryItem();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryItem))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryItem.ItemName = Encoding.ASCII.GetString(data, offset, 56); offset += 56;

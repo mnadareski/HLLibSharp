@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFDirectoryInfo2Entry
     {
+        /// <summary>
+        /// Total size of a NCFDirectoryInfo2Entry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// Reserved
         /// </summary>
@@ -26,7 +30,7 @@ namespace HLLib.Packages.NCF
             NCFDirectoryInfo2Entry directoryInfo2Entry = new NCFDirectoryInfo2Entry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryInfo2Entry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryInfo2Entry.Dummy0 = BitConverter.ToUInt32(data, offset); offset += 4;

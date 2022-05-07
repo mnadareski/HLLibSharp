@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFDirectoryEntry
     {
+        /// <summary>
+        /// Total size of a NCFDirectoryEntry object
+        /// </summary>
+        public const int ObjectSize = (4 * 7);
+
         /// <summary>
         /// Offset to the directory item name from the end of the directory items.
         /// </summary>
@@ -56,7 +60,7 @@ namespace HLLib.Packages.NCF
             NCFDirectoryEntry directoryEntry = new NCFDirectoryEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryEntry.NameOffset = BitConverter.ToUInt32(data, offset); offset += 4;
@@ -69,6 +73,5 @@ namespace HLLib.Packages.NCF
 
             return directoryEntry;
         }
-
     }
 }

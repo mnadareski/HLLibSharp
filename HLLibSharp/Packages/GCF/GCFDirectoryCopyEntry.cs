@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFDirectoryCopyEntry
     {
+        /// <summary>
+        /// Total size of a GCFDirectoryCopyEntry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// Index of the directory item.
         /// </summary>
@@ -26,7 +30,7 @@ namespace HLLib.Packages.GCF
             GCFDirectoryCopyEntry directoryCopyEntry = new GCFDirectoryCopyEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryCopyEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryCopyEntry.DirectoryIndex = BitConverter.ToUInt32(data, offset); offset += 4;

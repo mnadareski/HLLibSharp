@@ -11,9 +11,9 @@
 
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using HLLib.Directory;
 using HLLib.Mappings;
+using HLLib.Packages.Common;
 using HLLib.Streams;
 
 namespace HLLib.Packages.VBSP
@@ -73,17 +73,17 @@ namespace HLLib.Packages.VBSP
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         /// <summary>
         /// View representing file header data
         /// </summary>
-        public View FileHeaderView { get; private set; }
+        private View FileHeaderView;
 
         /// <summary>
         /// View representing the end of central directory data
         /// </summary>
-        public View EndOfCentralDirectoryRecordView { get; private set; }
+        private View EndOfCentralDirectoryRecordView;
 
         #endregion
 
@@ -221,7 +221,7 @@ namespace HLLib.Packages.VBSP
                             insertFolder.AddFile(temp, HL_ID_INVALID, FileHeaderView.ViewData);
                         }
 
-                        offset += Marshal.SizeOf(fileHeader);
+                        offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
                         break;
                     default:
                         offset = (int)EndOfCentralDirectoryRecord.CentralDirectorySize;
@@ -235,13 +235,13 @@ namespace HLLib.Packages.VBSP
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (Marshal.SizeOf(Header) > Mapping.MappingSize)
+            if (VBSPHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(Header)))
+            if (!Mapping.Map(ref HeaderView, 0, VBSPHeader.ObjectSize))
                 return false;
 
             int pointer = 0;
@@ -274,7 +274,7 @@ namespace HLLib.Packages.VBSP
                 }
             }
 
-            if (Marshal.SizeOf(EndOfCentralDirectoryRecord) <= Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length)
+            if (ZIPEndOfCentralDirectoryRecord.ObjectSize <= Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length)
             {
                 int test;
                 long offset = Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset;
@@ -282,7 +282,7 @@ namespace HLLib.Packages.VBSP
                 {
                     View pTestView = null;
 
-                    if (!Mapping.Map(pTestView, offset, 4))
+                    if (!Mapping.Map(ref pTestView, offset, 4))
                         return false;
 
                     test = BitConverter.ToInt32(pTestView.ViewData, 0);
@@ -292,7 +292,7 @@ namespace HLLib.Packages.VBSP
                     switch (test)
                     {
                         case HL_VBSP_ZIP_END_OF_CENTRAL_DIRECTORY_RECORD_SIGNATURE:
-                            if (!Mapping.Map(pTestView, offset, Marshal.SizeOf(EndOfCentralDirectoryRecord)))
+                            if (!Mapping.Map(ref pTestView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
                                 return false;
 
                             pointer = 0;
@@ -300,18 +300,18 @@ namespace HLLib.Packages.VBSP
 
                             Mapping.Unmap(pTestView);
 
-                            if (!Mapping.Map(EndOfCentralDirectoryRecordView, offset, Marshal.SizeOf(endOfCentralDirRecord)))
+                            if (!Mapping.Map(ref EndOfCentralDirectoryRecordView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
                                 return false;
 
                             pointer = 0;
                             EndOfCentralDirectoryRecord = ZIPEndOfCentralDirectoryRecord.Create(EndOfCentralDirectoryRecordView.ViewData, ref pointer);
 
-                            if (!Mapping.Map(FileHeaderView, Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + EndOfCentralDirectoryRecord.StartOfCentralDirOffset, (int)EndOfCentralDirectoryRecord.CentralDirectorySize))
+                            if (!Mapping.Map(ref FileHeaderView, Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + EndOfCentralDirectoryRecord.StartOfCentralDirOffset, (int)EndOfCentralDirectoryRecord.CentralDirectorySize))
                                 return false;
 
                             return true;
                         case HL_VBSP_ZIP_FILE_HEADER_SIGNATURE:
-                            if (!Mapping.Map(pTestView, offset, Marshal.SizeOf(new ZIPFileHeader())))
+                            if (!Mapping.Map(ref pTestView, offset, ZIPFileHeader.ObjectSize))
                                 return false;
 
                             pointer = 0;
@@ -319,10 +319,10 @@ namespace HLLib.Packages.VBSP
 
                             Mapping.Unmap(pTestView);
 
-                            offset += Marshal.SizeOf(fileHeader);
+                            offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
                             break;
                         case HL_VBSP_ZIP_LOCAL_FILE_HEADER_SIGNATURE:
-                            if (!Mapping.Map(pTestView, offset, Marshal.SizeOf(new ZIPLocalFileHeader())))
+                            if (!Mapping.Map(ref pTestView, offset, ZIPLocalFileHeader.ObjectSize))
                                 return false;
 
                             pointer = 0;
@@ -330,7 +330,7 @@ namespace HLLib.Packages.VBSP
 
                             Mapping.Unmap(pTestView);
 
-                            offset += Marshal.SizeOf(localFileHeader) + localFileHeader.CompressedSize;
+                            offset += ZIPLocalFileHeader.ObjectSize + localFileHeader.FileNameLength + localFileHeader.ExtraFieldLength + localFileHeader.CompressedSize;
                             break;
                         default:
                             Console.WriteLine($"Invalid file: unknown ZIP section signature {test}.");
@@ -571,7 +571,7 @@ namespace HLLib.Packages.VBSP
             }
             else
             {
-                size = (int)(Marshal.SizeOf(new LMPHeader()) + Header.Lumps[file.ID - HL_VBSP_LUMP_COUNT].Length);
+                size = (int)(LMPHeader.ObjectSize + Header.Lumps[file.ID - HL_VBSP_LUMP_COUNT].Length);
             }
 
             return true;
@@ -623,7 +623,7 @@ namespace HLLib.Packages.VBSP
                 }
 
                 View directoryEntryView = null;
-                if (!Mapping.Map(directoryEntryView, Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + directoryItem.RelativeOffsetOfLocalHeader, Marshal.SizeOf(new ZIPLocalFileHeader())))
+                if (!Mapping.Map(ref directoryEntryView, Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + directoryItem.RelativeOffsetOfLocalHeader, ZIPLocalFileHeader.ObjectSize))
                     return false;
 
                 pointer = 0;
@@ -637,7 +637,7 @@ namespace HLLib.Packages.VBSP
                     return false;
                 }
 
-                stream = new MappingStream(Mapping, Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + directoryItem.RelativeOffsetOfLocalHeader + Marshal.SizeOf(directoryEntry) + directoryEntry.FileNameLength + directoryEntry.ExtraFieldLength, directoryEntry.UncompressedSize);
+                stream = new MappingStream(Mapping, Header.Lumps[HL_VBSP_LUMP_PAKFILE].Offset + directoryItem.RelativeOffsetOfLocalHeader + ZIPLocalFileHeader.ObjectSize + directoryEntry.FileNameLength + directoryEntry.ExtraFieldLength, directoryEntry.UncompressedSize);
             }
             else if (file.ID < HL_VBSP_LUMP_COUNT)
             {
@@ -648,23 +648,23 @@ namespace HLLib.Packages.VBSP
                 uint id = file.ID - HL_VBSP_LUMP_COUNT;
 
                 View lumpView = null;
-                if (!Mapping.Map(lumpView, Header.Lumps[id].Offset, (int)Header.Lumps[id].Length))
+                if (!Mapping.Map(ref lumpView, Header.Lumps[id].Offset, (int)Header.Lumps[id].Length))
                     return false;
 
-                int bufferSize = (int)(Marshal.SizeOf(new LMPHeader()) + Header.Lumps[id].Length);
+                int bufferSize = (int)(LMPHeader.ObjectSize + Header.Lumps[id].Length);
                 byte[] buffer = new byte[bufferSize];
 
                 LMPHeader lmpHeader = new LMPHeader()
                 {
-                    LumpOffset = Marshal.SizeOf(new LMPHeader()),
+                    LumpOffset = LMPHeader.ObjectSize,
                     LumpID = (int)id,
                     LumpVersion = (int)Header.Lumps[id].Version,
                     LumpLength = (int)Header.Lumps[id].Length,
                     MapRevision = Header.MapRevision,
                 };
 
-                Array.Copy(lmpHeader.Serialize(), 0, buffer, 0, Marshal.SizeOf(lmpHeader));
-                Array.Copy(lumpView.ViewData, 0, buffer, Marshal.SizeOf(lmpHeader), Header.Lumps[id].Length);
+                Array.Copy(lmpHeader.Serialize(), 0, buffer, 0, LMPHeader.ObjectSize);
+                Array.Copy(lumpView.ViewData, 0, buffer, LMPHeader.ObjectSize, Header.Lumps[id].Length);
                 stream = new MemoryStream(buffer, bufferSize);
 
                 Mapping.Unmap(lumpView);

@@ -10,13 +10,20 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
-namespace HLLib.Packages.VBSP
+namespace HLLib.Packages.Common
 {
     public class ZIPLocalFileHeader
     {
+        /// <summary>
+        /// Total size of a ZIPLocalFileHeader object
+        /// </summary>
+        /// <remarks>
+        /// This does not include variable length fields
+        /// </remarks>
+        public const int ObjectSize = 4 + (2 * 5) + (4 * 3) + (2 * 2);
+
         /// <summary>
         /// local file header signature 4 bytes (0x04034b50)
         /// </summary>
@@ -90,7 +97,7 @@ namespace HLLib.Packages.VBSP
             ZIPLocalFileHeader localFileHeader = new ZIPLocalFileHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(localFileHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             localFileHeader.Signature = BitConverter.ToUInt32(data, offset); offset += 4;
@@ -104,6 +111,7 @@ namespace HLLib.Packages.VBSP
             localFileHeader.UncompressedSize = BitConverter.ToUInt32(data, offset); offset += 4;
             localFileHeader.FileNameLength = BitConverter.ToUInt16(data, offset); offset += 2;
             localFileHeader.ExtraFieldLength = BitConverter.ToUInt16(data, offset); offset += 2;
+            
             localFileHeader.FileName = Encoding.ASCII.GetString(data, offset, localFileHeader.FileNameLength); offset += localFileHeader.FileNameLength;
             localFileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, localFileHeader.ExtraFieldLength); offset += localFileHeader.ExtraFieldLength;
 

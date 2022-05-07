@@ -10,13 +10,20 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
-namespace HLLib.Packages.VBSP
+namespace HLLib.Packages.Common
 {
     public class ZIPFileHeader
     {
+        /// <summary>
+        /// Total size of a ZIPFileHeader object
+        /// </summary>
+        /// <remarks>
+        /// This does not include variable length fields
+        /// </remarks>
+        public const int ObjectSize = 4 + (2 * 6) + (4 * 3) + (2 * 5) + (4 * 2);
+
         /// <summary>
         /// 4 bytes (0x02014b50) 
         /// </summary>
@@ -122,7 +129,7 @@ namespace HLLib.Packages.VBSP
             ZIPFileHeader fileHeader = new ZIPFileHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(fileHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             fileHeader.Signature = BitConverter.ToUInt32(data, offset); offset += 4;
@@ -142,6 +149,7 @@ namespace HLLib.Packages.VBSP
             fileHeader.InternalFileAttribs = BitConverter.ToUInt16(data, offset); offset += 2;
             fileHeader.ExternalFileAttribs = BitConverter.ToUInt32(data, offset); offset += 4;
             fileHeader.RelativeOffsetOfLocalHeader = BitConverter.ToUInt32(data, offset); offset += 4;
+            
             fileHeader.FileName = Encoding.ASCII.GetString(data, offset, fileHeader.FileNameLength); offset += fileHeader.FileNameLength;
             fileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, fileHeader.ExtraFieldLength); offset += fileHeader.ExtraFieldLength;
             fileHeader.FileComment = Encoding.ASCII.GetString(data, offset, fileHeader.FileCommentLength); offset += fileHeader.FileCommentLength;

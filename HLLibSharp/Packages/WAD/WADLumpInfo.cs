@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.WAD
 {
     public class WADLumpInfo
     {
+        /// <summary>
+        /// Total size of a WADLumpInfo object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4;
+
         public uint Width { get; set; }
 
         public uint Height { get; set; }
@@ -27,7 +31,7 @@ namespace HLLib.Packages.WAD
             WADLumpInfo lumpInfo = new WADLumpInfo();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(lumpInfo))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             lumpInfo.Width = BitConverter.ToUInt32(data, offset); offset += 4;

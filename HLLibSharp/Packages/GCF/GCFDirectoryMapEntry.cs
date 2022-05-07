@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFDirectoryMapEntry
     {
+        /// <summary>
+        /// Total size of a GCFDirectoryMapEntry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// Index of the first data block. (N/A if == BlockCount.)
         /// </summary>
@@ -26,7 +30,7 @@ namespace HLLib.Packages.GCF
             GCFDirectoryMapEntry directoryMapEntry = new GCFDirectoryMapEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryMapEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryMapEntry.FirstBlockIndex = BitConverter.ToUInt32(data, offset); offset += 4;

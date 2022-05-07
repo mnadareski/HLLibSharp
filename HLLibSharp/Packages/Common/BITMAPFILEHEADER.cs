@@ -7,12 +7,16 @@
 **************************************************************************/
 
 using System;
-using System.Runtime.InteropServices;
 
-namespace HLLib.Packages.BSP
+namespace HLLib.Packages.Common
 {
     public class BITMAPFILEHEADER
     {
+        /// <summary>
+        /// Total size of a BITMAPFILEHEADER object
+        /// </summary>
+        public const int ObjectSize = 2 + 4 + 2 + 2 + 4;
+
         public ushort Type { get; set; }
 
         public uint Size { get; set; }
@@ -28,7 +32,7 @@ namespace HLLib.Packages.BSP
             BITMAPFILEHEADER fileHeader = new BITMAPFILEHEADER();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(fileHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             fileHeader.Type = BitConverter.ToUInt16(data, offset); offset += 2;
@@ -43,7 +47,7 @@ namespace HLLib.Packages.BSP
         public byte[] Serialize()
         {
             int offset = 0;
-            byte[] data = new byte[Marshal.SizeOf(new BITMAPFILEHEADER()) + 3];
+            byte[] data = new byte[ObjectSize + 3];
 
             Array.Copy(BitConverter.GetBytes(Type), 0, data, offset, 2); offset += 2;
             Array.Copy(BitConverter.GetBytes(Size), 0, data, offset, 4); offset += 4;

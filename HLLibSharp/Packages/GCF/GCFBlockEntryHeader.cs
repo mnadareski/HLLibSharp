@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFBlockEntryHeader
     {
+        /// <summary>
+        /// Total size of a GCFBlockEntryHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4;
+
         /// <summary>
         /// Number of data blocks.
         /// </summary>
@@ -61,7 +65,7 @@ namespace HLLib.Packages.GCF
             GCFBlockEntryHeader blockEntryHeader = new GCFBlockEntryHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(blockEntryHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             blockEntryHeader.BlockCount = BitConverter.ToUInt32(data, offset); offset += 4;

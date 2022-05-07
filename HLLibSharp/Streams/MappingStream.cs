@@ -31,8 +31,6 @@ namespace HLLib.Streams
 
         public Mapping Mapping { get; private set; }
 
-        public View View { get; private set; }
-
         public long MappingOffset { get; private set; }
 
         public long MappingSize { get; private set; }
@@ -42,6 +40,8 @@ namespace HLLib.Streams
         public long InternalPointer { get; private set; }
 
         public long InternalLength { get; private set; }
+
+        private View View;
 
         #endregion
 
@@ -348,7 +348,7 @@ namespace HLLib.Streams
             }
 
             long Length = pointer + ViewSize > MappingSize ? MappingSize - pointer : ViewSize;
-            return Mapping.Map(View, MappingOffset + pointer, (int)Length);
+            return Mapping.Map(ref View, MappingOffset + pointer, (int)Length);
         }
 
         #endregion

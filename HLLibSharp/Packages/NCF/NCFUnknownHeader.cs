@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFUnknownHeader
     {
+        /// <summary>
+        /// Total size of a NCFUnknownHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         /// <summary>
         /// Always 0x00000001
         /// </summary>
@@ -31,7 +35,7 @@ namespace HLLib.Packages.NCF
             NCFUnknownHeader unknownHeader = new NCFUnknownHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(unknownHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             unknownHeader.Dummy0 = BitConverter.ToUInt32(data, offset); offset += 4;

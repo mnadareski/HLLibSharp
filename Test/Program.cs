@@ -11,22 +11,32 @@ namespace Test
         {
             foreach (string arg in args)
             {
-                Console.WriteLine($"Path: {arg}");
-
-                // Derive the type from the file
-                PackageType packageType = DeriveType(arg);
-                Console.WriteLine($"Package Type: {packageType}");
-                if (packageType == PackageType.HL_PACKAGE_NONE)
-                    continue;
-
-                // Create a new package from the file
-                Package package = Package.CreatePackage(packageType);
-                FileModeFlags mode = FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_WRITE | FileModeFlags.HL_MODE_CREATE | FileModeFlags.HL_MODE_NO_FILEMAPPING;
-                bool opened = package.Open(arg, mode, overwriteFiles: true);
-                if (!opened)
+                try
                 {
-                    Console.WriteLine("Package could not be opened!");
-                    continue;
+                    Console.WriteLine($"Path: {arg}");
+
+                    // Derive the type from the file
+                    PackageType packageType = DeriveType(arg);
+                    Console.WriteLine($"Package Type: {packageType}");
+                    if (packageType == PackageType.HL_PACKAGE_NONE)
+                        continue;
+
+                    // Create a new package from the file
+                    Package package = Package.CreatePackage(packageType);
+                    FileModeFlags mode = FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_WRITE | FileModeFlags.HL_MODE_NO_FILEMAPPING;
+                    bool opened = package.Open(arg, mode, overwriteFiles: true);
+                    if (!opened)
+                    {
+                        Console.WriteLine("Package could not be opened!");
+                        continue;
+                    }
+
+                    Console.WriteLine("Package opened successfully!");
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
                 }
             }
         }
@@ -46,7 +56,7 @@ namespace Test
 
             try
             {
-                using (FileStream fs = File.OpenRead(file))
+                using (FileStream fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     byte[] buffer = new byte[16];
                     fs.Read(buffer, 0, 16);

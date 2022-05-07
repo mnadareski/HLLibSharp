@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFDirectoryHeader
     {
+        /// <summary>
+        /// Total size of a NCFDirectoryHeader object
+        /// </summary>
+        public const int ObjectSize = (4 * 14);
+
         /// <summary>
         /// Always 0x00000004
         /// </summary>
@@ -91,7 +95,7 @@ namespace HLLib.Packages.NCF
             NCFDirectoryHeader directoryHeader = new NCFDirectoryHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryHeader.Dummy0 = BitConverter.ToUInt32(data, offset); offset += 4;

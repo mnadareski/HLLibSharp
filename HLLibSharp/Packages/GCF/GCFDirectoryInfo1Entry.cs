@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFDirectoryInfo1Entry
     {
+        /// <summary>
+        /// Total size of a GCFDirectoryInfo1Entry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// Reserved
         /// </summary>
@@ -26,7 +30,7 @@ namespace HLLib.Packages.GCF
             GCFDirectoryInfo1Entry directoryInfo1Entry = new GCFDirectoryInfo1Entry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryInfo1Entry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryInfo1Entry.Dummy0 = BitConverter.ToUInt32(data, offset); offset += 4;

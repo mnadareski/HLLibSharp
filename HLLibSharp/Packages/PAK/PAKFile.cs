@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using HLLib.Directory;
 using HLLib.Mappings;
 using HLLib.Streams;
@@ -37,12 +36,12 @@ namespace HLLib.Packages.PAK
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         /// <summary>
         /// View representing directory item data
         /// </summary>
-        public View DirectoryItemView { get; private set; }
+        private View DirectoryItemView;
 
         #endregion
 
@@ -96,7 +95,7 @@ namespace HLLib.Packages.PAK
         {
             DirectoryFolder root = new DirectoryFolder(this);
 
-            long itemCount = Header.DirectoryLength / Marshal.SizeOf(DirectoryItems[0]);
+            long itemCount = Header.DirectoryLength / PAKDirectoryItem.ObjectSize;
 
             // Loop through each file in the PAK file.
             for (uint i = 0; i < itemCount; i++)
@@ -147,13 +146,13 @@ namespace HLLib.Packages.PAK
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (Marshal.SizeOf(Header) > Mapping.MappingSize)
+            if (PAKHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(Header)))
+            if (!Mapping.Map(ref HeaderView, 0, PAKHeader.ObjectSize))
                 return false;
 
             int pointer = 0;
@@ -164,10 +163,10 @@ namespace HLLib.Packages.PAK
                 return false;
             }
 
-            if (!Mapping.Map(DirectoryItemView, Header.DirectoryOffset, (int)Header.DirectoryLength))
+            if (!Mapping.Map(ref DirectoryItemView, Header.DirectoryOffset, (int)Header.DirectoryLength))
                 return false;
 
-            long itemCount = Header.DirectoryLength / Marshal.SizeOf(DirectoryItems[0]);
+            long itemCount = Header.DirectoryLength / PAKDirectoryItem.ObjectSize;
             byte[] directoryItemViewBytes = DirectoryItemView.ViewData;
             pointer = 0;
             DirectoryItems = new PAKDirectoryItem[itemCount];

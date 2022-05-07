@@ -10,9 +10,9 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using HLLib.Directory;
 using HLLib.Mappings;
+using HLLib.Packages.Common;
 using HLLib.Streams;
 
 namespace HLLib.Packages.BSP
@@ -52,12 +52,12 @@ namespace HLLib.Packages.BSP
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         /// <summary>
         /// View representing texture data
         /// </summary>
-        public View TextureView { get; private set; }
+        private View TextureView;
 
         #endregion
 
@@ -132,7 +132,7 @@ namespace HLLib.Packages.BSP
                 if ((int)(TextureHeader.Offsets[i]) == -1)
                     continue;
 
-                int pointer = Marshal.SizeOf(TextureHeader) + (int)TextureHeader.Offsets[i];
+                int pointer = BSPTextureHeader.ObjectSize + (int)TextureHeader.Offsets[i];
 
                 BSPTexture texture = BSPTexture.Create(textureViewData, ref pointer);
                 if (texture.Offsets[0] == 0)
@@ -148,13 +148,13 @@ namespace HLLib.Packages.BSP
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (Marshal.SizeOf(Header) > Mapping.MappingSize)
+            if (BSPHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(Header)))
+            if (!Mapping.Map(ref HeaderView, 0, BSPHeader.ObjectSize))
                 return false;
 
             int pointer = 0;
@@ -165,7 +165,7 @@ namespace HLLib.Packages.BSP
                 return false;
             }
 
-            if (!Mapping.Map(TextureView, Header.Lumps[HL_BSP_LUMP_TEXTUREDATA].Offset, (int)Header.Lumps[HL_BSP_LUMP_TEXTUREDATA].Length))
+            if (!Mapping.Map(ref TextureView, Header.Lumps[HL_BSP_LUMP_TEXTUREDATA].Offset, (int)Header.Lumps[HL_BSP_LUMP_TEXTUREDATA].Length))
                 return false;
 
             pointer = 0;
@@ -271,7 +271,7 @@ namespace HLLib.Packages.BSP
                 if (!GetLumpInfo(file, out int width, out int height, out uint paletteSize, out _, out _, 0))
                     return false;
 
-                size = (int)(Marshal.SizeOf(new BITMAPFILEHEADER()) + Marshal.SizeOf(new BITMAPINFOHEADER()) + paletteSize * 4 + width * height);
+                size = (int)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
             }
             else
             {
@@ -299,7 +299,7 @@ namespace HLLib.Packages.BSP
                     }
                 }
 
-                size = (int)(Marshal.SizeOf(new BSPTexture()) + pixelSize + 2 + paletteSize * 3);
+                size = (int)(BSPTexture.ObjectSize + pixelSize + 2 + paletteSize * 3);
             }
             else
             {
@@ -322,7 +322,7 @@ namespace HLLib.Packages.BSP
                 if (!GetLumpInfo(file, out int width, out int height, out uint paletteSize, out byte[] palette, out byte[] pixels, 0))
                     return false;
 
-                int bufferSize = (int)(Marshal.SizeOf(new BITMAPFILEHEADER()) + Marshal.SizeOf(new BITMAPINFOHEADER()) + paletteSize * 4 + width * height);
+                int bufferSize = (int)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
                 byte[] buffer = new byte[bufferSize];
 
                 //
@@ -339,10 +339,10 @@ namespace HLLib.Packages.BSP
                 //
 
                 fileHeader.Type = ('M' << 8) | 'B';
-                fileHeader.Size = (uint)(Marshal.SizeOf(fileHeader) + Marshal.SizeOf(infoHeader) + paletteSize * 4 + width * height);
-                fileHeader.OffBits = (uint)(Marshal.SizeOf(fileHeader) + Marshal.SizeOf(infoHeader) + paletteSize * 4);
+                fileHeader.Size = (uint)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
+                fileHeader.OffBits = (uint)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4);
 
-                infoHeader.Size = (uint)Marshal.SizeOf(infoHeader);
+                infoHeader.Size = (uint)BITMAPINFOHEADER.ObjectSize;
                 infoHeader.Width = (int)width;
                 infoHeader.Height = (int)height;
                 infoHeader.Planes = 1;
@@ -376,8 +376,8 @@ namespace HLLib.Packages.BSP
                 }
 
                 int pointer = 0;
-                Array.Copy(fileHeader.Serialize(), 0, buffer, pointer, Marshal.SizeOf(fileHeader)); pointer += Marshal.SizeOf(fileHeader);
-                Array.Copy(infoHeader.Serialize(), 0, buffer, pointer, Marshal.SizeOf(infoHeader)); pointer += Marshal.SizeOf(infoHeader);
+                Array.Copy(fileHeader.Serialize(), 0, buffer, pointer, BITMAPFILEHEADER.ObjectSize); pointer += BITMAPFILEHEADER.ObjectSize;
+                Array.Copy(infoHeader.Serialize(), 0, buffer, pointer, BITMAPINFOHEADER.ObjectSize); pointer += BITMAPINFOHEADER.ObjectSize;
                 Array.Copy(paletteData, 0, buffer, pointer, paletteData.Length); pointer += paletteData.Length;
                 Array.Copy(pixelData, 0, buffer, pointer, pixelData.Length); pointer += pixelData.Length;
 
@@ -417,7 +417,7 @@ namespace HLLib.Packages.BSP
             }
 
             byte[] textureViewData = TextureView.ViewData;
-            int pointer = Marshal.SizeOf(TextureHeader) + (int)TextureHeader.Offsets[file.ID];
+            int pointer = BSPTextureHeader.ObjectSize + (int)TextureHeader.Offsets[file.ID];
             BSPTexture texture = BSPTexture.Create(textureViewData, ref pointer);
 
             width = (int)texture.Width;

@@ -10,10 +10,10 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 using HLLib.Directory;
 using HLLib.Mappings;
+using HLLib.Packages.Common;
 using HLLib.Streams;
 
 namespace HLLib.Packages.WAD
@@ -38,12 +38,12 @@ namespace HLLib.Packages.WAD
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         /// <summary>
         /// View representing the lump data
         /// </summary>
-        public View LumpView { get; private set; }
+        private View LumpView;
 
         #endregion
 
@@ -115,13 +115,13 @@ namespace HLLib.Packages.WAD
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (Marshal.SizeOf(new WADHeader()) > Mapping.MappingSize)
+            if (WADHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(new WADHeader())))
+            if (!Mapping.Map(ref HeaderView, 0, WADHeader.ObjectSize))
                 return false;
 
             int pointer = 0;
@@ -133,7 +133,7 @@ namespace HLLib.Packages.WAD
                 return false;
             }
 
-            if (!Mapping.Map(LumpView, Header.LumpOffset, (int)(Header.LumpCount * Marshal.SizeOf(new WADLump()))))
+            if (!Mapping.Map(ref LumpView, Header.LumpOffset, (int)(Header.LumpCount * WADLump.ObjectSize)))
                 return false;
 
             pointer = 0;
@@ -242,7 +242,7 @@ namespace HLLib.Packages.WAD
             if (GetLumpInfo(file, out uint width, out uint height, out uint paletteSize, out _, out _, out _))
                 return false;
 
-            size = (int)(Marshal.SizeOf(new BITMAPFILEHEADER()) + Marshal.SizeOf(new BITMAPINFOHEADER()) + paletteSize * 4 + width * height);
+            size = (int)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
             return true;
         }
 
@@ -295,7 +295,7 @@ namespace HLLib.Packages.WAD
             if (!GetLumpInfo(file, out uint width, out uint height, out uint paletteSize, out byte[] palette, out byte[] pixels, out View view))
                 return false;
 
-            int bufferSize = (int)(Marshal.SizeOf(new BITMAPFILEHEADER()) + Marshal.SizeOf(new BITMAPINFOHEADER()) + paletteSize * 4 + width * height);
+            int bufferSize = (int)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
             byte[] buffer = new byte[bufferSize];
 
             //
@@ -312,10 +312,10 @@ namespace HLLib.Packages.WAD
             //
 
             fileHeader.Type = ('M' << 8) | 'B';
-            fileHeader.Size = (uint)(Marshal.SizeOf(new BITMAPFILEHEADER()) + Marshal.SizeOf(new BITMAPINFOHEADER()) + paletteSize * 4 + width * height);
-            fileHeader.OffBits = (uint)(Marshal.SizeOf(new BITMAPFILEHEADER()) + Marshal.SizeOf(new BITMAPINFOHEADER()) + paletteSize * 4);
+            fileHeader.Size = (BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
+            fileHeader.OffBits = (BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4);
 
-            infoHeader.Size = (uint)Marshal.SizeOf(new BITMAPINFOHEADER());
+            infoHeader.Size = BITMAPINFOHEADER.ObjectSize;
             infoHeader.Width = (int)width;
             infoHeader.Height = (int)height;
             infoHeader.Planes = 1;
@@ -351,8 +351,8 @@ namespace HLLib.Packages.WAD
             Mapping.Unmap(view);
 
             int pointer = 0;
-            Array.Copy(fileHeader.Serialize(), 0, buffer, pointer, Marshal.SizeOf(fileHeader)); pointer += Marshal.SizeOf(fileHeader);
-            Array.Copy(infoHeader.Serialize(), 0, buffer, pointer, Marshal.SizeOf(infoHeader)); pointer += Marshal.SizeOf(infoHeader);
+            Array.Copy(fileHeader.Serialize(), 0, buffer, pointer, BITMAPFILEHEADER.ObjectSize); pointer += BITMAPFILEHEADER.ObjectSize;
+            Array.Copy(infoHeader.Serialize(), 0, buffer, pointer, BITMAPINFOHEADER.ObjectSize); pointer += BITMAPINFOHEADER.ObjectSize;
             Array.Copy(paletteData, 0, buffer, pointer, paletteData.Length); pointer += paletteData.Length;
             Array.Copy(pixelData, 0, buffer, pointer, pixelData.Length); pointer += pixelData.Length;
 
@@ -412,7 +412,7 @@ namespace HLLib.Packages.WAD
                 return false;
             }
 
-            if (!Mapping.Map(view, lump.Offset, (int)lump.DiskLength))
+            if (!Mapping.Map(ref view, lump.Offset, (int)lump.DiskLength))
                 return false;
 
             byte[] data = view.ViewData;

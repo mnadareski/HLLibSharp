@@ -11,9 +11,9 @@
 
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using HLLib.Directory;
 using HLLib.Mappings;
+using HLLib.Packages.Common;
 using HLLib.Streams;
 
 namespace HLLib.Packages.ZIP
@@ -58,12 +58,12 @@ namespace HLLib.Packages.ZIP
         /// <summary>
         /// View representing file header data
         /// </summary>
-        public View FileHeaderView { get; private set; }
+        private View FileHeaderView;
 
         /// <summary>
         /// View representing the end of central directory record data
         /// </summary>
-        public View EndOfCentralDirectoryRecordView { get; private set; }
+        private View EndOfCentralDirectoryRecordView;
 
         #endregion
 
@@ -126,7 +126,7 @@ namespace HLLib.Packages.ZIP
                         // Check if we have just a file, or if the file has directories we need to create.
                         if (!fileName.Contains('/') && !fileName.Contains('\\'))
                         {
-                            byte[] buffer = new byte[Marshal.SizeOf(fileHeader)];
+                            byte[] buffer = new byte[ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength];
                             Array.Copy(FileHeaderView.ViewData, offset, buffer, 0, buffer.Length);
                             root.AddFile(fileName, HL_ID_INVALID, buffer);
                         }
@@ -159,12 +159,12 @@ namespace HLLib.Packages.ZIP
                             }
 
                             // The file name is the last token, add it.
-                            byte[] buffer = new byte[Marshal.SizeOf(fileHeader)];
+                            byte[] buffer = new byte[ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength];
                             Array.Copy(FileHeaderView.ViewData, offset, buffer, 0, buffer.Length);
                             insertFolder.AddFile(temp, HL_ID_INVALID, buffer);
                         }
 
-                        offset += (int)(Marshal.SizeOf(fileHeader) + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength);
+                        offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
                         break;
                     default:
                         offset = (int)EndOfCentralDirectoryRecord.CentralDirectorySize;
@@ -178,7 +178,7 @@ namespace HLLib.Packages.ZIP
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (Marshal.SizeOf(EndOfCentralDirectoryRecord) > Mapping.MappingSize)
+            if (ZIPEndOfCentralDirectoryRecord.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
@@ -191,7 +191,7 @@ namespace HLLib.Packages.ZIP
             {
                 View testView = null;
 
-                if (!Mapping.Map(testView, offset, 4))
+                if (!Mapping.Map(ref testView, offset, 4))
                     return false;
 
                 byte[] testViewData = testView.ViewData;
@@ -203,7 +203,7 @@ namespace HLLib.Packages.ZIP
                 {
                     case HL_ZIP_END_OF_CENTRAL_DIRECTORY_RECORD_SIGNATURE:
                         {
-                            if (!Mapping.Map(testView, offset, Marshal.SizeOf(EndOfCentralDirectoryRecord)))
+                            if (!Mapping.Map(ref testView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
                                 return false;
 
                             pointer = 0;
@@ -211,20 +211,20 @@ namespace HLLib.Packages.ZIP
 
                             Mapping.Unmap(testView);
 
-                            if (!Mapping.Map(EndOfCentralDirectoryRecordView, offset, Marshal.SizeOf(endOfCentralDirectoryRecord) + endOfCentralDirectoryRecord.CommentLength))
+                            if (!Mapping.Map(ref EndOfCentralDirectoryRecordView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize + endOfCentralDirectoryRecord.CommentLength))
                                 return false;
 
                             pointer = 0;
                             EndOfCentralDirectoryRecord = ZIPEndOfCentralDirectoryRecord.Create(EndOfCentralDirectoryRecordView.ViewData, ref pointer);
 
-                            if (!Mapping.Map(FileHeaderView, EndOfCentralDirectoryRecord.StartOfCentralDirOffset, (int)EndOfCentralDirectoryRecord.CentralDirectorySize))
+                            if (!Mapping.Map(ref FileHeaderView, EndOfCentralDirectoryRecord.StartOfCentralDirOffset, (int)EndOfCentralDirectoryRecord.CentralDirectorySize))
                                 return false;
 
                             return true;
                         }
                     case HL_ZIP_FILE_HEADER_SIGNATURE:
                         {
-                            if (!Mapping.Map(testView, offset, Marshal.SizeOf(new ZIPFileHeader())))
+                            if (!Mapping.Map(ref testView, offset, ZIPFileHeader.ObjectSize))
                                 return false;
 
                             pointer = 0;
@@ -232,12 +232,12 @@ namespace HLLib.Packages.ZIP
 
                             Mapping.Unmap(testView);
 
-                            offset += (Marshal.SizeOf(fileHeader) + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength);
+                            offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
                             break;
                         }
                     case HL_ZIP_LOCAL_FILE_HEADER_SIGNATURE:
                         {
-                            if (!Mapping.Map(testView, offset, Marshal.SizeOf(new ZIPLocalFileHeader())))
+                            if (!Mapping.Map(ref testView, offset, ZIPLocalFileHeader.ObjectSize))
                                 return false;
 
                             pointer = 0;
@@ -245,7 +245,7 @@ namespace HLLib.Packages.ZIP
 
                             Mapping.Unmap(testView);
 
-                            offset += (Marshal.SizeOf(localFileHeader) + localFileHeader.FileNameLength + localFileHeader.ExtraFieldLength + localFileHeader.CompressedSize);
+                            offset += ZIPLocalFileHeader.ObjectSize + localFileHeader.FileNameLength + localFileHeader.ExtraFieldLength + localFileHeader.CompressedSize;
                             break;
                         }
                     default:
@@ -434,7 +434,7 @@ namespace HLLib.Packages.ZIP
 
             View directoryEntryView = null;
 
-            if (!Mapping.Map(directoryEntryView, directoryItem.RelativeOffsetOfLocalHeader, Marshal.SizeOf(new ZIPLocalFileHeader())))
+            if (!Mapping.Map(ref directoryEntryView, directoryItem.RelativeOffsetOfLocalHeader, ZIPLocalFileHeader.ObjectSize))
             {
                 stream = null;
                 return false;
@@ -452,7 +452,7 @@ namespace HLLib.Packages.ZIP
                 return false;
             }
 
-            stream = new MappingStream(Mapping, directoryItem.RelativeOffsetOfLocalHeader + Marshal.SizeOf(new ZIPLocalFileHeader()) + DirectoryEntry.FileNameLength + DirectoryEntry.ExtraFieldLength, DirectoryEntry.UncompressedSize);
+            stream = new MappingStream(Mapping, directoryItem.RelativeOffsetOfLocalHeader + ZIPLocalFileHeader.ObjectSize + DirectoryEntry.FileNameLength + DirectoryEntry.ExtraFieldLength, DirectoryEntry.UncompressedSize);
 
             return true;
         }

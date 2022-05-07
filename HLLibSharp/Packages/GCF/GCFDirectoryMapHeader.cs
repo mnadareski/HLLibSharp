@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
@@ -19,6 +18,11 @@ namespace HLLib.Packages.GCF
     /// </remarks>
     public class GCFDirectoryMapHeader
     {
+        /// <summary>
+        /// Total size of a GCFDirectoryMapHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         /// <summary>
         /// Always 0x00000001
         /// </summary>
@@ -34,7 +38,7 @@ namespace HLLib.Packages.GCF
             GCFDirectoryMapHeader directoryMapHeader = new GCFDirectoryMapHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryMapHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryMapHeader.Dummy0 = BitConverter.ToUInt32(data, offset); offset += 4;

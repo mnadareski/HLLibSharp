@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.VPK
 {
     public class VPKHeader
     {
+        /// <summary>
+        /// Total size of a VPKHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4;
+
         /// <summary>
         /// Always 0x55aa1234.
         /// </summary>
@@ -30,7 +34,7 @@ namespace HLLib.Packages.VPK
             VPKHeader header = new VPKHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(header))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             header.Signature = BitConverter.ToUInt32(data, offset); offset += 4;

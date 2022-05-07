@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.BSP
 {
     public class BSPLump
     {
+        /// <summary>
+        /// Total size of a BSPLump object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         /// <summary>
         /// Offset
         /// </summary>
@@ -31,7 +35,7 @@ namespace HLLib.Packages.BSP
             BSPLump lump = new BSPLump();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(lump))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             lump.Offset = BitConverter.ToUInt32(data, offset); offset += 4;

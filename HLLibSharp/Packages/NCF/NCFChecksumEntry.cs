@@ -10,23 +10,27 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFChecksumEntry
     {
         /// <summary>
+        /// Total size of a NCFChecksumEntry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
+        /// <summary>
         /// Checksum.
         /// </summary>
-        public ulong Checksum { get; set; }
+        public uint Checksum { get; set; }
 
         public static NCFChecksumEntry Create(byte[] data, ref int offset)
         {
             NCFChecksumEntry checksumEntry = new NCFChecksumEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(checksumEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             checksumEntry.Checksum = BitConverter.ToUInt32(data, offset); offset += 4;

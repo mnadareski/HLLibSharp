@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.PAK
 {
     public class PAKHeader
     {
+        /// <summary>
+        /// Total size of a PAKHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4;
+
         /// <summary>
         /// Signature
         /// </summary>
@@ -37,7 +41,7 @@ namespace HLLib.Packages.PAK
             PAKHeader header = new PAKHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(header))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             header.Signature = Encoding.ASCII.GetString(data, offset, 4); offset += 4;

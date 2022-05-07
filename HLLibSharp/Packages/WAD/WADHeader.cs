@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.WAD
 {
     public class WADHeader
     {
+        /// <summary>
+        /// Total size of a WADHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4;
+
         public string Signature { get; set; }
         
         public uint LumpCount { get; set; }
@@ -28,7 +32,7 @@ namespace HLLib.Packages.WAD
             WADHeader header = new WADHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(header))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             header.Signature = Encoding.ASCII.GetString(data, offset, 4); offset += 4;

@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.BSP
 {
     public class BSPTexture
     {
+        /// <summary>
+        /// Total size of a BSPTexture object
+        /// </summary>
+        public const int ObjectSize = 16 + 4 + 4 + (4 * 4);
+
         /// <summary>
         /// Name
         /// </summary>
@@ -42,7 +46,7 @@ namespace HLLib.Packages.BSP
             BSPTexture texture = new BSPTexture();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(texture))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             texture.Name = Encoding.ASCII.GetString(data, offset, 16); offset += 16;

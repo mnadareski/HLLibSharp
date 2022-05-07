@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 using HLLib.Directory;
 using HLLib.Mappings;
@@ -35,22 +34,22 @@ namespace HLLib.Packages.XZP
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         /// <summary>
         /// View representing directory entry data
         /// </summary>
-        public View DirectoryEntryView { get; private set; }
+        private View DirectoryEntryView;
 
         /// <summary>
         /// View representing directory item data
         /// </summary>
-        public View DirectoryItemView { get; private set; }
+        private View DirectoryItemView;
 
         /// <summary>
         /// View representing footer data
         /// </summary>
-        public View FooterView { get; private set; }
+        private View FooterView;
 
         #endregion
 
@@ -199,13 +198,13 @@ namespace HLLib.Packages.XZP
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (Marshal.SizeOf(new XZPHeader()) > Mapping.MappingSize)
+            if (XZPHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(new XZPHeader())))
+            if (!Mapping.Map(ref HeaderView, 0, XZPHeader.ObjectSize))
                 return false;
 
             int pointer = 0;
@@ -223,13 +222,13 @@ namespace HLLib.Packages.XZP
                 return false;
             }
 
-            if (Header.HeaderLength != Marshal.SizeOf(new XZPHeader()))
+            if (Header.HeaderLength != XZPHeader.ObjectSize)
             {
                 Console.WriteLine("Invalid file: the file's header size does not match.");
                 return false;
             }
 
-            if (!Mapping.Map(DirectoryEntryView, Marshal.SizeOf(new XZPHeader()), (int)(Header.PreloadBytes != 0 ? (Header.DirectoryEntryCount + Header.PreloadDirectoryEntryCount) * Marshal.SizeOf(new XZPDirectoryEntry()) + Header.DirectoryEntryCount * Marshal.SizeOf(new XZPDirectoryMapping()) : Header.DirectoryEntryCount * Marshal.SizeOf(new XZPDirectoryEntry()))))
+            if (!Mapping.Map(ref DirectoryEntryView, XZPHeader.ObjectSize, (int)(Header.PreloadBytes != 0 ? (Header.DirectoryEntryCount + Header.PreloadDirectoryEntryCount) * XZPDirectoryEntry.ObjectSize + Header.DirectoryEntryCount * XZPDirectoryMapping.ObjectSize : Header.DirectoryEntryCount * XZPDirectoryEntry.ObjectSize)))
                 return false;
 
             pointer = 0;
@@ -261,7 +260,7 @@ namespace HLLib.Packages.XZP
 
             if (Header.DirectoryItemCount != 0)
             {
-                if (!Mapping.Map(DirectoryItemView, Header.DirectoryItemOffset, (int)Header.DirectoryItemLength))
+                if (!Mapping.Map(ref DirectoryItemView, Header.DirectoryItemOffset, (int)Header.DirectoryItemLength))
                     return false;
 
                 pointer = 0;
@@ -272,7 +271,7 @@ namespace HLLib.Packages.XZP
                 }
             }
 
-            if (!Mapping.Map(FooterView, Mapping.MappingSize - Marshal.SizeOf(new XZPFooter()), Marshal.SizeOf(new XZPFooter())))
+            if (!Mapping.Map(ref FooterView, Mapping.MappingSize - XZPFooter.ObjectSize, XZPFooter.ObjectSize))
                 return false;
 
             pointer = 0;

@@ -10,35 +10,39 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.WAD
 {
-	public class WADLump
+    public class WADLump
     {
-		public uint Offset { get; set; }
+        /// <summary>
+        /// Total size of a WADLump object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4 + 1 + 1 + 1 + 1 + 16;
 
-		public uint DiskLength { get; set; }
+        public uint Offset { get; set; }
 
-		public uint Length { get; set; }
+        public uint DiskLength { get; set; }
 
-		public byte Type { get; set; }
+        public uint Length { get; set; }
 
-		public byte Compression { get; set; }
+        public byte Type { get; set; }
 
-		public byte Padding0 { get; set; }
+        public byte Compression { get; set; }
 
-		public byte Padding1 { get; set; }
+        public byte Padding0 { get; set; }
 
-		public char[] Name { get; set; }
+        public byte Padding1 { get; set; }
+
+        public char[] Name { get; set; }
 
         public static WADLump Create(byte[] data, ref int offset)
         {
             WADLump lump = new WADLump();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(lump))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             lump.Offset = BitConverter.ToUInt32(data, offset); offset += 4;

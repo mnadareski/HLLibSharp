@@ -9,9 +9,7 @@
  * version.
  */
 
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.VPK
@@ -82,15 +80,14 @@ namespace HLLib.Packages.VPK
 
         public byte[] Serialize()
         {
-            int offset = 0;
-            byte[] data = new byte[Marshal.SizeOf(new VPKDirectoryItem()) + 3];
+            List<byte> dataList = new List<byte>();
 
-            Array.Copy(Encoding.ASCII.GetBytes(Extension), 0, data, offset, Extension.Length); offset += Extension.Length + 1;
-            Array.Copy(Encoding.ASCII.GetBytes(Path), 0, data, offset, Path.Length); offset += Path.Length + 1;
-            Array.Copy(Encoding.ASCII.GetBytes(Name), 0, data, offset, Name.Length); offset += Name.Length + 1;
-            Array.Copy(DirectoryEntry.Serialize(), 0, data, offset, Marshal.SizeOf(new VPKDirectoryEntry()));
+            dataList.AddRange(Encoding.ASCII.GetBytes(Extension)); dataList.Add(0x00);
+            dataList.AddRange(Encoding.ASCII.GetBytes(Path)); dataList.Add(0x00);
+            dataList.AddRange(Encoding.ASCII.GetBytes(Name)); dataList.Add(0x00);
+            dataList.AddRange(DirectoryEntry.Serialize());
 
-            return data;
+            return dataList.ToArray();
         }
     }
 }

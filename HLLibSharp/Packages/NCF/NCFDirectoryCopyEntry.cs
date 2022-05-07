@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFDirectoryCopyEntry
     {
+        /// <summary>
+        /// Total size of a NCFDirectoryCopyEntry object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// Index of the directory item.
         /// </summary>
@@ -26,13 +30,12 @@ namespace HLLib.Packages.NCF
             NCFDirectoryCopyEntry directoryCopyEntry = new NCFDirectoryCopyEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryCopyEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryCopyEntry.DirectoryIndex = BitConverter.ToUInt32(data, offset); offset += 4;
 
             return directoryCopyEntry;
         }
-
     }
 }

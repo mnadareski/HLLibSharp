@@ -10,7 +10,7 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Text;
 using HLLib.Directory;
 using HLLib.Mappings;
@@ -53,7 +53,7 @@ namespace HLLib.Packages.VPK
         /// <summary>
         /// View representing the data
         /// </summary>
-        public View View { get; private set; }
+        private View View;
 
         #endregion
 
@@ -77,7 +77,7 @@ namespace HLLib.Packages.VPK
         /// <summary>
         /// Deserialized directory items data
         /// </summary>
-        public DirectoryItemList DirectoryItems { get; private set; }
+        public List<VPKDirectoryItem> DirectoryItems { get; private set; }
 
         #endregion
 
@@ -172,17 +172,17 @@ namespace HLLib.Packages.VPK
         /// <inheritdoc/>
         protected override bool MapDataStructures()
         {
-            if (!Mapping.Map(View, 0, (int)Mapping.MappingSize))
+            if (!Mapping.Map(ref View, 0, (int)Mapping.MappingSize))
                 return false;
 
-            DirectoryItems = new DirectoryItemList();
+            DirectoryItems = new List<VPKDirectoryItem>();
 
             byte[] viewData = View.ViewData;
             int viewDataStart = 0;
             int viewDataEnd = View.Length;
             int viewDirectoryDataEnd = viewDataEnd;
 
-            if (Marshal.SizeOf(new VPKHeader()) > viewDataEnd)
+            if (VPKHeader.ObjectSize > viewDataEnd)
             {
                 Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
                 return false;
@@ -198,7 +198,7 @@ namespace HLLib.Packages.VPK
             }
             else
             {
-                viewDataStart += Marshal.SizeOf(new VPKHeader());
+                viewDataStart += VPKHeader.ObjectSize;
                 viewDirectoryDataEnd = (int)(viewDataStart + Header.DirectoryLength);
             }
 
@@ -230,7 +230,7 @@ namespace HLLib.Packages.VPK
                             break;
 
                         VPKDirectoryEntry directoryEntry;
-                        if (viewDataStart + Marshal.SizeOf(new VPKDirectoryEntry()) > viewDirectoryDataEnd)
+                        if (viewDataStart + VPKDirectoryEntry.ObjectSize > viewDirectoryDataEnd)
                         {
                             Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
                             return false;
@@ -238,7 +238,7 @@ namespace HLLib.Packages.VPK
 
                         pointer = viewDataStart;
                         directoryEntry = VPKDirectoryEntry.Create(viewData, ref pointer);
-                        viewDataStart += Marshal.SizeOf(directoryEntry);
+                        viewDataStart += VPKDirectoryEntry.ObjectSize;
 
                         int preloadDataPointer = -1;
                         if (directoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
@@ -587,7 +587,7 @@ namespace HLLib.Packages.VPK
                     if (directoryItem.DirectoryEntry.PreloadBytes != 0)
                     {
                         View view = null;
-                        if (!Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Map(view, directoryItem.DirectoryEntry.EntryOffset, (int)directoryItem.DirectoryEntry.EntryLength))
+                        if (!Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Map(ref view, directoryItem.DirectoryEntry.EntryOffset, (int)directoryItem.DirectoryEntry.EntryLength))
                             return false;
 
                         int bufferSize = (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes);

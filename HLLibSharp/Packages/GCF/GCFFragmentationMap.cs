@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFFragmentationMap
     {
+        /// <summary>
+        /// Total size of a GCFFragmentationMap object
+        /// </summary>
+        public const int ObjectSize = 4;
+
         /// <summary>
         /// The index of the next data block.
         /// </summary>
@@ -26,7 +30,7 @@ namespace HLLib.Packages.GCF
             GCFFragmentationMap fragmentationMap = new GCFFragmentationMap();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(fragmentationMap))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             fragmentationMap.NextDataBlockIndex = BitConverter.ToUInt32(data, offset); offset += 4;

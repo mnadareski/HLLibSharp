@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.VBSP
 {
     public class VBSPHeader
     {
+        /// <summary>
+        /// Total size of a VBSPHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + (VBSPLump.ObjectSize * HL_VBSP_LUMP_COUNT) + 4;
+
         private const int HL_VBSP_LUMP_COUNT = 64;
 
         /// <summary>
@@ -44,7 +48,7 @@ namespace HLLib.Packages.VBSP
             VBSPHeader header = new VBSPHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(header))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             header.Signature = Encoding.ASCII.GetString(data, offset, 4); offset += 4;

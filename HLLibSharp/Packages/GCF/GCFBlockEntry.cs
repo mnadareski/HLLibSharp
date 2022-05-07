@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFBlockEntry
     {
+        /// <summary>
+        /// Total size of a GCFBlockEntry object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4 + 4 + 4 + 4 + 4;
+
         /// <summary>
         /// Flags for the block entry.  0x200F0000 == Not used.
         /// </summary>
@@ -56,7 +60,7 @@ namespace HLLib.Packages.GCF
             GCFBlockEntry blockEntry = new GCFBlockEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(blockEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             blockEntry.EntryFlags = BitConverter.ToUInt32(data, offset); offset += 4;

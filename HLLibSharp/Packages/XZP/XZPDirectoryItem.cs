@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.XZP
 {
     public class XZPDirectoryItem
     {
+        /// <summary>
+        /// Total size of a XZPDirectoryItem object
+        /// </summary>
+        public const int ObjectSize = 4 + 4 + 4;
+
         public uint FileNameCRC { get; set; }
 
         public uint NameOffset { get; set; }
@@ -27,7 +31,7 @@ namespace HLLib.Packages.XZP
             XZPDirectoryItem directoryItem = new XZPDirectoryItem();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(directoryItem))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             directoryItem.FileNameCRC = BitConverter.ToUInt32(data, offset); offset += 4;

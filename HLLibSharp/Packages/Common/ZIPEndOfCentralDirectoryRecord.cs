@@ -10,13 +10,20 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
-namespace HLLib.Packages.ZIP
+namespace HLLib.Packages.Common
 {
     public class ZIPEndOfCentralDirectoryRecord
     {
+        /// <summary>
+        /// Total size of a ZIPEndOfCentralDirectoryRecord object
+        /// </summary>
+        /// <remarks>
+        /// This does not include variable length fields
+        /// </remarks>
+        public const int ObjectSize = 4 + 2 + 2 + 2 + 2 + 4 + 4 + 2;
+
         /// <summary>
         /// 4 bytes (0x06054b50)
         /// </summary>
@@ -67,7 +74,7 @@ namespace HLLib.Packages.ZIP
             ZIPEndOfCentralDirectoryRecord endOfCentralDirectoryRecord = new ZIPEndOfCentralDirectoryRecord();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(endOfCentralDirectoryRecord))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             endOfCentralDirectoryRecord.Signature = BitConverter.ToUInt32(data, offset); offset += 4;
@@ -78,6 +85,7 @@ namespace HLLib.Packages.ZIP
             endOfCentralDirectoryRecord.CentralDirectorySize = BitConverter.ToUInt32(data, offset); offset += 4;
             endOfCentralDirectoryRecord.StartOfCentralDirOffset = BitConverter.ToUInt32(data, offset); offset += 4;
             endOfCentralDirectoryRecord.CommentLength = BitConverter.ToUInt16(data, offset); offset += 2;
+            
             endOfCentralDirectoryRecord.Comment = Encoding.ASCII.GetString(data, offset, endOfCentralDirectoryRecord.CommentLength); offset += endOfCentralDirectoryRecord.CommentLength;
 
             return endOfCentralDirectoryRecord;

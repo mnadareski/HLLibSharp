@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 using HLLib.Directory;
 using HLLib.Mappings;
@@ -63,7 +62,7 @@ namespace HLLib.Packages.NCF
         /// <summary>
         /// View representing header data
         /// </summary>
-        public View HeaderView { get; private set; }
+        private View HeaderView;
 
         #endregion
 
@@ -229,13 +228,13 @@ namespace HLLib.Packages.NCF
 
             #region Header.
 
-            if (Marshal.SizeOf(Header) > Mapping.MappingSize)
+            if (NCFHeader.ObjectSize > Mapping.MappingSize)
             {
                 Console.WriteLine("Invalid file: the file map is too small for it's header.");
                 return false;
             }
 
-            if (!Mapping.Map(HeaderView, 0, Marshal.SizeOf(Header)))
+            if (!Mapping.Map(ref HeaderView, 0, NCFHeader.ObjectSize))
                 return false;
 
             byte[] headerViewData = HeaderView.ViewData;
@@ -254,38 +253,30 @@ namespace HLLib.Packages.NCF
                 return false;
             }
 
-            headerSize += Marshal.SizeOf(Header);
+            headerSize += NCFHeader.ObjectSize;
 
             #endregion
 
             #region Directory.
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(DirectoryHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, NCFDirectoryHeader.ObjectSize))
                 return false;
 
             DirectoryHeader = NCFDirectoryHeader.Create(headerViewData, ref pointer);
 
-            headerSize += DirectoryHeader.DirectorySize; //* Marshal.SizeOf(NCFDirectoryHeader);
-            // + DirectoryHeader.ItemCount * Marshal.SizeOf(NCFDirectoryEntry)
-            // + DirectoryHeader.NameSize
-            // + DirectoryHeader.Info1Count * Marshal.SizeOf(NCFDirectoryInfo1Entry)
-            // + DirectoryHeader.ItemCount * Marshal.SizeOf(NCFDirectoryInfo2Entry)
-            // + DirectoryHeader.CopyCount * Marshal.SizeOf(NCFDirectoryCopyEntry)
-            // + DirectoryHeader.LocalCount * Marshal.SizeOf(NCFDirectoryLocalEntry);
-
-            headerSize += Marshal.SizeOf(UnknownHeader);
-            headerSize += DirectoryHeader.ItemCount * Marshal.SizeOf(UnknownEntries[0]);
+            headerSize += DirectoryHeader.DirectorySize;
+            headerSize += NCFUnknownHeader.ObjectSize;
+            headerSize += DirectoryHeader.ItemCount * NCFUnknownEntry.ObjectSize;
 
             #endregion
 
             #region Checksums.
 
-            if (!Mapping.Map(HeaderView, headerSize, Marshal.SizeOf(ChecksumHeader)))
+            if (!Mapping.Map(ref HeaderView, headerSize, NCFChecksumHeader.ObjectSize))
                 return false;
 
             ChecksumHeader = NCFChecksumHeader.Create(headerViewData, ref pointer);
-
-            headerSize += Marshal.SizeOf(ChecksumHeader) + ChecksumHeader.ChecksumSize;
+            headerSize += NCFChecksumHeader.ObjectSize + ChecksumHeader.ChecksumSize;
 
             #endregion
 
@@ -293,7 +284,7 @@ namespace HLLib.Packages.NCF
 
             #region Map the header.
 
-            if (!Mapping.Map(HeaderView, 0, (int)headerSize))
+            if (!Mapping.Map(ref HeaderView, 0, (int)headerSize))
                 return false;
 
             pointer = 0;
@@ -560,8 +551,8 @@ namespace HLLib.Packages.NCF
                                     break;
                                 }
 
-                                ulong uiChecksum = Checksum.Adler32(buffer, bufferSize) ^ Checksum.CRC32(buffer, bufferSize);
-                                if (uiChecksum != ChecksumEntries[checksumMapEntry.FirstChecksumIndex + i].Checksum)
+                                uint checksum = Checksum.Adler32(buffer, bufferSize) ^ Checksum.CRC32(buffer, bufferSize);
+                                if (checksum != ChecksumEntries[checksumMapEntry.FirstChecksumIndex + i].Checksum)
                                 {
                                     validation = Validation.HL_VALIDATES_CORRUPT;
                                     break;

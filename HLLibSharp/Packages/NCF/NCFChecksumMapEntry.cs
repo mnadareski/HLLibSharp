@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.NCF
 {
     public class NCFChecksumMapEntry
     {
+        /// <summary>
+        /// Total size of a NCFChecksumMapEntry object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         /// <summary>
         /// Number of checksums.
         /// </summary>
@@ -31,7 +35,7 @@ namespace HLLib.Packages.NCF
             NCFChecksumMapEntry checksumMapEntry = new NCFChecksumMapEntry();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(checksumMapEntry))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             checksumMapEntry.ChecksumCount = BitConverter.ToUInt32(data, offset); offset += 4;

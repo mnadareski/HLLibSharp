@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.BSP
 {
     public class BSPHeader
     {
+        /// <summary>
+        /// Total size of a BSPHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + (HL_BSP_LUMP_COUNT * BSPLump.ObjectSize);
+
         private const int HL_BSP_LUMP_COUNT = 15;
 
         /// <summary>
@@ -33,7 +37,7 @@ namespace HLLib.Packages.BSP
             BSPHeader header = new BSPHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(header))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             header.Version = BitConverter.ToUInt32(data, offset); offset += 4;

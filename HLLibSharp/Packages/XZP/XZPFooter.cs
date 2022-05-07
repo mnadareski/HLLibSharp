@@ -10,13 +10,17 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HLLib.Packages.XZP
 {
     public class XZPFooter
     {
+        /// <summary>
+        /// Total size of a XZPFooter object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         public uint FileLength { get; set; }
 
         public string Signature { get; set; }
@@ -26,7 +30,7 @@ namespace HLLib.Packages.XZP
             XZPFooter footer = new XZPFooter();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(footer))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             footer.FileLength = BitConverter.ToUInt32(data, offset); offset += 4;

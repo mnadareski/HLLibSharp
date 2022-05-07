@@ -132,7 +132,7 @@ namespace HLLib.Mappings
         /// <param name="offset">Offset in the source to create the view</param>
         /// <param name="length">Length of the view</param>
         /// <returns>True if the mapping was successful, false otherwise</returns>
-        public bool Map(View view, long offset, int length)
+        public bool Map(ref View view, long offset, int length)
         {
             if (!Opened)
             {
@@ -140,13 +140,13 @@ namespace HLLib.Mappings
                 return false;
             }
 
-            if (view?.Mapping != this)
+            if (view != null && view.Mapping != this)
             {
                 Console.WriteLine("View does not belong to mapping.");
                 return false;
             }
 
-            if (Unmap(view) && MapInternal(offset, length, out view))
+            if (Unmap(view) && MapInternal(offset, length, ref view))
             {
                 Views.Add(view);
                 return true;
@@ -227,7 +227,7 @@ namespace HLLib.Mappings
         /// <param name="length">Length of the view</param>
         /// <param name="view">Output view generated</param>
         /// <returns>True if the mapping was successful, false otherwise</returns>
-        protected abstract bool MapInternal(long offset, int length, out View view);
+        protected abstract bool MapInternal(long offset, int length, ref View view);
 
         /// <summary>
         /// Per-mapping implementation of unmapping

@@ -10,12 +10,16 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace HLLib.Packages.GCF
 {
     public class GCFChecksumHeader
     {
+        /// <summary>
+        /// Total size of a GCFChecksumHeader object
+        /// </summary>
+        public const int ObjectSize = 4 + 4;
+
         /// <summary>
         /// Always 0x00000001
         /// </summary>
@@ -31,7 +35,7 @@ namespace HLLib.Packages.GCF
             GCFChecksumHeader checksumHeader = new GCFChecksumHeader();
 
             // Check to see if the data is valid
-            if (data == null || data.Length < Marshal.SizeOf(checksumHeader))
+            if (data == null || data.Length < ObjectSize)
                 return null;
 
             checksumHeader.Dummy0 = BitConverter.ToUInt32(data, offset); offset += 4;
