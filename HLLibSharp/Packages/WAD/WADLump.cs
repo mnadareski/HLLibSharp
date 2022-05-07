@@ -19,7 +19,7 @@ namespace HLLib.Packages.WAD
         /// <summary>
         /// Total size of a WADLump object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 1 + 1 + 1 + 1 + 16;
+        public const int ObjectSize = (4 * 3) + (4 * 1) + 16;
 
         public uint Offset { get; set; }
 
@@ -35,7 +35,7 @@ namespace HLLib.Packages.WAD
 
         public byte Padding1 { get; set; }
 
-        public char[] Name { get; set; }
+        public string Name { get; set; }
 
         public static WADLump Create(byte[] data, ref int offset)
         {
@@ -52,7 +52,7 @@ namespace HLLib.Packages.WAD
             lump.Compression = data[offset++];
             lump.Padding0 = data[offset++];
             lump.Padding1 = data[offset++];
-            lump.Name = Encoding.ASCII.GetString(data, offset, 16).ToCharArray(); offset += 16;
+            lump.Name = Encoding.ASCII.GetString(data, offset, 16); offset += 16;
 
             return lump;
         }
