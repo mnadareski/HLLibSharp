@@ -40,7 +40,7 @@ namespace HLLib.Packages.BSP
 
             textureHeader.TextureCount = BitConverter.ToUInt32(data, offset); offset += 4;
             textureHeader.Offsets = new uint[1];
-            for (int i = 0; i < textureHeader.TextureCount; i++)
+            for (int i = 0; i < 1; i++)
             {
                 textureHeader.Offsets[i] = BitConverter.ToUInt32(data, offset); offset += 4;
             }

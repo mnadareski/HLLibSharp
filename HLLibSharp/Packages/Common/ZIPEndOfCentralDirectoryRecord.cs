@@ -86,7 +86,8 @@ namespace HLLib.Packages.Common
             endOfCentralDirectoryRecord.StartOfCentralDirOffset = BitConverter.ToUInt32(data, offset); offset += 4;
             endOfCentralDirectoryRecord.CommentLength = BitConverter.ToUInt16(data, offset); offset += 2;
             
-            endOfCentralDirectoryRecord.Comment = Encoding.ASCII.GetString(data, offset, endOfCentralDirectoryRecord.CommentLength); offset += endOfCentralDirectoryRecord.CommentLength;
+            if (offset < ObjectSize)
+                endOfCentralDirectoryRecord.Comment = Encoding.ASCII.GetString(data, offset, endOfCentralDirectoryRecord.CommentLength); offset += endOfCentralDirectoryRecord.CommentLength;
 
             return endOfCentralDirectoryRecord;
         }

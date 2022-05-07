@@ -149,10 +149,13 @@ namespace HLLib.Packages.Common
             fileHeader.InternalFileAttribs = BitConverter.ToUInt16(data, offset); offset += 2;
             fileHeader.ExternalFileAttribs = BitConverter.ToUInt32(data, offset); offset += 4;
             fileHeader.RelativeOffsetOfLocalHeader = BitConverter.ToUInt32(data, offset); offset += 4;
-            
-            fileHeader.FileName = Encoding.ASCII.GetString(data, offset, fileHeader.FileNameLength); offset += fileHeader.FileNameLength;
-            fileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, fileHeader.ExtraFieldLength); offset += fileHeader.ExtraFieldLength;
-            fileHeader.FileComment = Encoding.ASCII.GetString(data, offset, fileHeader.FileCommentLength); offset += fileHeader.FileCommentLength;
+
+            if (offset < ObjectSize)
+            {
+                fileHeader.FileName = Encoding.ASCII.GetString(data, offset, fileHeader.FileNameLength); offset += fileHeader.FileNameLength;
+                fileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, fileHeader.ExtraFieldLength); offset += fileHeader.ExtraFieldLength;
+                fileHeader.FileComment = Encoding.ASCII.GetString(data, offset, fileHeader.FileCommentLength); offset += fileHeader.FileCommentLength;
+            }
 
             return fileHeader;
         }

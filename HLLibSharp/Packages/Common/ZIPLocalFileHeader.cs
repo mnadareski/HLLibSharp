@@ -111,9 +111,12 @@ namespace HLLib.Packages.Common
             localFileHeader.UncompressedSize = BitConverter.ToUInt32(data, offset); offset += 4;
             localFileHeader.FileNameLength = BitConverter.ToUInt16(data, offset); offset += 2;
             localFileHeader.ExtraFieldLength = BitConverter.ToUInt16(data, offset); offset += 2;
-            
-            localFileHeader.FileName = Encoding.ASCII.GetString(data, offset, localFileHeader.FileNameLength); offset += localFileHeader.FileNameLength;
-            localFileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, localFileHeader.ExtraFieldLength); offset += localFileHeader.ExtraFieldLength;
+
+            if (offset < ObjectSize)
+            {
+                localFileHeader.FileName = Encoding.ASCII.GetString(data, offset, localFileHeader.FileNameLength); offset += localFileHeader.FileNameLength;
+                localFileHeader.ExtraField = Encoding.ASCII.GetString(data, offset, localFileHeader.ExtraFieldLength); offset += localFileHeader.ExtraFieldLength;
+            }
 
             return localFileHeader;
         }

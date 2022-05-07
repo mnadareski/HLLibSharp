@@ -296,11 +296,11 @@ namespace HLLib.Packages.VBSP
                                 return false;
 
                             pointer = 0;
-                            ZIPEndOfCentralDirectoryRecord endOfCentralDirRecord = ZIPEndOfCentralDirectoryRecord.Create(testView.ViewData, ref pointer);
+                            ZIPEndOfCentralDirectoryRecord endOfCentralDirectoryRecord = ZIPEndOfCentralDirectoryRecord.Create(testView.ViewData, ref pointer);
 
                             Mapping.Unmap(ref testView);
 
-                            if (!Mapping.Map(ref EndOfCentralDirectoryRecordView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize))
+                            if (!Mapping.Map(ref EndOfCentralDirectoryRecordView, offset, ZIPEndOfCentralDirectoryRecord.ObjectSize + endOfCentralDirectoryRecord.CommentLength))
                                 return false;
 
                             pointer = 0;
