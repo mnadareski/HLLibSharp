@@ -104,7 +104,7 @@ namespace HLLib.Mappings
                 return false;
 
             byte[] data = new byte[length];
-            if (Stream.Read(data, offset, length) != length)
+            if (Stream.Read(data, 0, length) != length)
                 return false;
 
             view = new View(this, offset, length);
