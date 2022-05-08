@@ -137,9 +137,9 @@ namespace HLLib.Directory
                 {
                     if (input.Open(FileModeFlags.HL_MODE_READ))
                     {
-                        Streams.FileStream Output = new Streams.FileStream(fileName);
+                        Streams.FileStream output = new Streams.FileStream(fileName);
 
-                        if (input.Open(FileModeFlags.HL_MODE_WRITE | FileModeFlags.HL_MODE_CREATE))
+                        if (output.Open(FileModeFlags.HL_MODE_WRITE | FileModeFlags.HL_MODE_CREATE))
                         {
                             int totalBytes = 0;
                             byte[] buffer = new byte[HL_DEFAULT_COPY_BUFFER_SIZE];
@@ -147,20 +147,19 @@ namespace HLLib.Directory
                             while (true)
                             {
                                 int bytesRead = input.Read(buffer, 0, buffer.Length);
-
                                 if (bytesRead == 0)
                                 {
                                     result = totalBytes == input.Length;
                                     break;
                                 }
 
-                                if (Output.Write(buffer, 0, bytesRead) != bytesRead)
+                                if (output.Write(buffer, 0, bytesRead) != bytesRead)
                                     break;
 
                                 totalBytes += bytesRead;
                             }
 
-                            Output.Close();
+                            output.Close();
                         }
 
                         input.Close();

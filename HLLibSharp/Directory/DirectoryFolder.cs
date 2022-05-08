@@ -568,8 +568,7 @@ namespace HLLib.Directory
         /// <inheritdoc/>
         public override bool Extract(string path, bool readEncrypted = true, bool overwrite = true)
         {
-            string name = Name;
-            name = RemoveIllegalCharacters(name);
+            string name = RemoveIllegalCharacters(Name);
 
             string folderName;
             if (path == null || path == "\0")
