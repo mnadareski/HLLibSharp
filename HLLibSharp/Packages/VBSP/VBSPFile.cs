@@ -194,7 +194,7 @@ namespace HLLib.Packages.VBSP
                             DirectoryFolder insertFolder = root;
 
                             string temp = string.Empty;
-                            string[] token = fileName.Split('/', '\\');
+                            string[] token = headerFileName.Split('/', '\\');
                             int index = 0;
                             while (index < token.Length)
                             {
