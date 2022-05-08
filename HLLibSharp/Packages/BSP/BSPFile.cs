@@ -113,16 +113,11 @@ namespace HLLib.Packages.BSP
 
             if (Header.Lumps[HL_BSP_LUMP_ENTITIES].Length != 0)
             {
-                string fileName = System.IO.Path.GetFileName(Mapping.FileName);
+                string fileName = GetFileName(256 - 4);
                 if (fileName[fileName.Length - 4] == '\0')
-                {
                     root.AddFile("entities.ent", TextureHeader.TextureCount);
-                }
                 else
-                {
-                    fileName += ".ent";
-                    root.AddFile(fileName, TextureHeader.TextureCount);
-                }
+                    root.AddFile($"{fileName}.ent", TextureHeader.TextureCount);
             }
 
             // Loop through each texture in the BSP file.
@@ -180,6 +175,20 @@ namespace HLLib.Packages.BSP
 
             Header = null;
             Mapping.Unmap(ref HeaderView);
+        }
+
+        /// <summary>
+        /// Get a filename based on the mapping
+        /// </summary>
+        /// <param name="bufferSize">Buffer size to limit data to</param>
+        /// <returns>Required filename, null on error</returns>
+        private string GetFileName(uint bufferSize)
+        {
+            if (bufferSize == 0)
+                return null;
+
+            string mappingName = System.IO.Path.GetFileName(Mapping.FileName);
+            return mappingName.Substring(0, Math.Min((int)bufferSize, mappingName.Length));
         }
 
         #endregion
@@ -312,11 +321,11 @@ namespace HLLib.Packages.BSP
 
                 fileHeader.Type = ('M' << 8) | 'B';
                 fileHeader.Size = (uint)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
-                fileHeader.OffBits = (uint)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4);
+                fileHeader.OffBits = BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4;
 
-                infoHeader.Size = (uint)BITMAPINFOHEADER.ObjectSize;
-                infoHeader.Width = (int)width;
-                infoHeader.Height = (int)height;
+                infoHeader.Size = BITMAPINFOHEADER.ObjectSize;
+                infoHeader.Width = width;
+                infoHeader.Height = height;
                 infoHeader.Planes = 1;
                 infoHeader.BitCount = 8;
                 infoHeader.SizeImage = 0;
@@ -389,7 +398,7 @@ namespace HLLib.Packages.BSP
             }
 
             byte[] textureViewData = TextureView.ViewData;
-            int pointer = BSPTextureHeader.ObjectSize + (int)TextureHeader.Offsets[file.ID];
+            int pointer = (int)TextureHeader.Offsets[file.ID];
             BSPTexture texture = BSPTexture.Create(textureViewData, ref pointer);
 
             width = (int)texture.Width;
@@ -402,6 +411,12 @@ namespace HLLib.Packages.BSP
                 {
                     pixelSize += (width >> i) * (height >> i);
                 }
+            }
+
+            if (pixelSize == 0)
+            {
+                Console.WriteLine($"No writable pixels found for {file.Name}");
+                return false;
             }
 
             pixels = new byte[pixelSize];
