@@ -438,8 +438,8 @@ namespace HLLib.Packages.WAD
                 dataPointer += 2;
 
                 // Get palette.
-                palette = new byte[paletteSize];
-                Array.Copy(view.ViewData, dataPointer, palette, 0, paletteSize);
+                palette = new byte[paletteSize * 3];
+                Array.Copy(view.ViewData, dataPointer, palette, 0, palette.Length);
             }
             else if (lump.Type == 0x43)
             {
@@ -484,7 +484,7 @@ namespace HLLib.Packages.WAD
 
                 // Get palette.
                 palette = new byte[paletteSize * 3];
-                Array.Copy(view.ViewData, dataPointer, palette, 0, paletteSize);
+                Array.Copy(view.ViewData, dataPointer, palette, 0, palette.Length);
             }
 
             switch (mipmap)
