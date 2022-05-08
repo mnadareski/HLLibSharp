@@ -391,15 +391,14 @@ namespace HLLib.Packages.BSP
         {
             width = 0; height = 0; paletteSize = 0;
             palette = null; pixels = null;
-            if (mipmap > HL_BSP_MIPMAP_COUNT)
+            if (mipmap >= HL_BSP_MIPMAP_COUNT)
             {
                 Console.WriteLine($"Error reading texture: invalid mipmap level {mipmap}.");
                 return false;
             }
 
-            byte[] textureViewData = TextureView.ViewData;
             int pointer = (int)TextureHeader.Offsets[file.ID];
-            BSPTexture texture = BSPTexture.Create(textureViewData, ref pointer);
+            BSPTexture texture = BSPTexture.Create(TextureView.ViewData, ref pointer);
 
             width = (int)texture.Width;
             height = (int)texture.Height;
@@ -420,12 +419,12 @@ namespace HLLib.Packages.BSP
             }
 
             pixels = new byte[pixelSize];
-            Array.Copy(textureViewData, texture.Offsets[mipmap], pixels, 0, pixelSize);
+            Array.Copy(TextureView.ViewData, texture.Offsets[mipmap], pixels, 0, pixelSize);
 
-            paletteSize = BitConverter.ToUInt16(textureViewData, (int)(texture.Offsets[0] + pixelSize));
+            paletteSize = BitConverter.ToUInt16(TextureView.ViewData, (int)(texture.Offsets[0] + pixelSize));
 
-            palette = new byte[paletteSize];
-            Array.Copy(textureViewData, texture.Offsets[0] + pixelSize + 2, palette, 0, paletteSize);
+            palette = new byte[paletteSize * 3];
+            Array.Copy(TextureView.ViewData, texture.Offsets[0] + pixelSize + 2, palette, 0, palette.Length);
 
             switch (mipmap)
             {
