@@ -219,14 +219,14 @@ namespace HLLib.Packages.BSP
                     DirectoryFile file = (DirectoryFile)item;
                     if (file.ID < TextureHeader.TextureCount)
                     {
-                        GetLumpInfo(file, out int width, out int height, out uint paletteSize, out _, out _, 0);
+                        GetLumpInfo(file, out uint width, out uint height, out uint paletteSize, out _, out _, 0);
                         switch (packageAttribute)
                         {
                             case PackageAttributeType.HL_BSP_ITEM_WIDTH:
-                                attribute.SetUnsignedInteger(ItemAttributeNames[(int)packageAttribute], (uint)width, false);
+                                attribute.SetUnsignedInteger(ItemAttributeNames[(int)packageAttribute], width, false);
                                 return true;
                             case PackageAttributeType.HL_BSP_ITEM_HEIGHT:
-                                attribute.SetUnsignedInteger(ItemAttributeNames[(int)packageAttribute], (uint)height, false);
+                                attribute.SetUnsignedInteger(ItemAttributeNames[(int)packageAttribute], height, false);
                                 return true;
                             case PackageAttributeType.HL_BSP_ITEM_PALETTE_ENTRIES:
                                 attribute.SetUnsignedInteger(ItemAttributeNames[(int)packageAttribute], paletteSize, false);
@@ -249,7 +249,7 @@ namespace HLLib.Packages.BSP
             size = default;
             if (file.ID < TextureHeader.TextureCount)
             {
-                if (!GetLumpInfo(file, out int width, out int height, out uint paletteSize, out _, out _, 0))
+                if (!GetLumpInfo(file, out uint width, out uint height, out uint paletteSize, out _, out _, 0))
                     return false;
 
                 size = (int)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
@@ -268,7 +268,7 @@ namespace HLLib.Packages.BSP
             size = default;
             if (file.ID < TextureHeader.TextureCount)
             {
-                if (!GetLumpInfo(file, out int width, out int height, out uint paletteSize, out _, out _, 0))
+                if (!GetLumpInfo(file, out uint width, out uint height, out uint paletteSize, out _, out _, 0))
                     return false;
 
                 int pixelSize = 0;
@@ -276,7 +276,7 @@ namespace HLLib.Packages.BSP
                 {
                     //if(pTexture.lpOffsets[i] != 0)
                     {
-                        pixelSize += (width >> i) * (height >> i);
+                        pixelSize += (int)((width >> i) * (height >> i));
                     }
                 }
 
@@ -300,7 +300,7 @@ namespace HLLib.Packages.BSP
             stream = null;
             if (file.ID < TextureHeader.TextureCount)
             {
-                if (!GetLumpInfo(file, out int width, out int height, out uint paletteSize, out byte[] palette, out byte[] pixels, 0))
+                if (!GetLumpInfo(file, out uint width, out uint height, out uint paletteSize, out byte[] palette, out byte[] pixels, 0))
                     return false;
 
                 int bufferSize = (int)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
@@ -320,12 +320,12 @@ namespace HLLib.Packages.BSP
                 //
 
                 fileHeader.Type = ('M' << 8) | 'B';
-                fileHeader.Size = (uint)(BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
-                fileHeader.OffBits = BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4;
+                fileHeader.Size = (BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4 + width * height);
+                fileHeader.OffBits = (BITMAPFILEHEADER.ObjectSize + BITMAPINFOHEADER.ObjectSize + paletteSize * 4);
 
                 infoHeader.Size = BITMAPINFOHEADER.ObjectSize;
-                infoHeader.Width = width;
-                infoHeader.Height = height;
+                infoHeader.Width = (int)width;
+                infoHeader.Height = (int)height;
                 infoHeader.Planes = 1;
                 infoHeader.BitCount = 8;
                 infoHeader.SizeImage = 0;
@@ -387,7 +387,7 @@ namespace HLLib.Packages.BSP
         /// <param name="pixels">Pixel information byte array</param>
         /// <param name="mipmap">Mipmap level</param>
         /// <returns>True if lump information could be retrieved, false otherwise</returns>
-        private bool GetLumpInfo(DirectoryFile file, out int width, out int height, out uint paletteSize, out byte[] palette, out byte[] pixels, uint mipmap)
+        private bool GetLumpInfo(DirectoryFile file, out uint width, out uint height, out uint paletteSize, out byte[] palette, out byte[] pixels, uint mipmap)
         {
             width = 0; height = 0; paletteSize = 0;
             palette = null; pixels = null;
@@ -400,15 +400,15 @@ namespace HLLib.Packages.BSP
             int pointer = (int)TextureHeader.Offsets[file.ID];
             BSPTexture texture = BSPTexture.Create(TextureView.ViewData, ref pointer);
 
-            width = (int)texture.Width;
-            height = (int)texture.Height;
+            width = texture.Width;
+            height = texture.Height;
 
             int pixelSize = 0;
             for (int i = 0; i < HL_BSP_MIPMAP_COUNT; i++)
             {
                 if (texture.Offsets[i] != 0)
                 {
-                    pixelSize += (width >> i) * (height >> i);
+                    pixelSize += (int)((width >> i) * (height >> i));
                 }
             }
 
