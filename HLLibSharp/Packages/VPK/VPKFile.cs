@@ -177,7 +177,6 @@ namespace HLLib.Packages.VPK
 
             DirectoryItems = new List<VPKDirectoryItem>();
 
-            byte[] viewData = View.ViewData;
             int viewDataStart = 0;
             int viewDataEnd = View.Length;
             int viewDirectoryDataEnd = viewDataEnd;
@@ -189,7 +188,7 @@ namespace HLLib.Packages.VPK
             }
 
             int pointer = 0;
-            Header = VPKHeader.Create(viewData, ref pointer);
+            Header = VPKHeader.Create(View.ViewData, ref pointer);
 
             if (Header.Signature != HL_VPK_SIGNATURE)
             {
@@ -204,29 +203,29 @@ namespace HLLib.Packages.VPK
 
             while (viewDataStart != viewDirectoryDataEnd)
             {
-                if (!MapString(viewData, ref viewDataStart, viewDirectoryDataEnd, out int extension))
+                if (!MapString(View.ViewData, ref viewDataStart, viewDirectoryDataEnd, out int extension))
                     return false;
 
-                string extensionString = Encoding.ASCII.GetString(viewData, extension, viewDataStart - extension);
-                if (viewData[extension] == '\0')
+                string extensionString = Encoding.ASCII.GetString(View.ViewData, extension, viewDataStart - extension);
+                if (View.ViewData[extension] == '\0')
                     break;
 
                 while (true)
                 {
-                    if (!MapString(viewData, ref viewDataStart, viewDirectoryDataEnd, out int path))
+                    if (!MapString(View.ViewData, ref viewDataStart, viewDirectoryDataEnd, out int path))
                         return false;
 
-                    string pathString = Encoding.ASCII.GetString(viewData, path, viewDataStart - path);
-                    if (viewData[path] == '\0')
+                    string pathString = Encoding.ASCII.GetString(View.ViewData, path, viewDataStart - path);
+                    if (View.ViewData[path] == '\0')
                         break;
 
                     while (true)
                     {
-                        if (!MapString(viewData, ref viewDataStart, viewDirectoryDataEnd, out int name))
+                        if (!MapString(View.ViewData, ref viewDataStart, viewDirectoryDataEnd, out int name))
                             return false;
 
-                        string nameString = Encoding.ASCII.GetString(viewData, name, viewDataStart - name);
-                        if (viewData[name] == '\0')
+                        string nameString = Encoding.ASCII.GetString(View.ViewData, name, viewDataStart - name);
+                        if (View.ViewData[name] == '\0')
                             break;
 
                         if (viewDataStart + VPKDirectoryEntry.ObjectSize > viewDirectoryDataEnd)
@@ -236,7 +235,7 @@ namespace HLLib.Packages.VPK
                         }
 
                         pointer = viewDataStart;
-                        VPKDirectoryEntry directoryEntry = VPKDirectoryEntry.Create(viewData, ref pointer);
+                        VPKDirectoryEntry directoryEntry = VPKDirectoryEntry.Create(View.ViewData, ref pointer);
                         viewDataStart += VPKDirectoryEntry.ObjectSize;
 
                         int preloadDataPointer = -1;
@@ -270,7 +269,7 @@ namespace HLLib.Packages.VPK
                         if (preloadDataPointer > -1)
                         {
                             preloadData = new byte[viewDirectoryDataEnd - viewDataEnd];
-                            Array.Copy(viewData, viewDataStart, preloadData, 0, preloadData.Length);
+                            Array.Copy(View.ViewData, viewDataStart, preloadData, 0, preloadData.Length);
                         }
 
                         DirectoryItems.Add(new VPKDirectoryItem(extensionString, pathString, nameString, directoryEntry, preloadData));
