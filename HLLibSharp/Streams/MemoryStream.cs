@@ -84,7 +84,7 @@ namespace HLLib.Streams
                 return false;
             }
 
-            if ((FileMode & (FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_WRITE)) == 0)
+            if ((fileMode & (FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_WRITE)) == 0)
             {
                 Console.WriteLine($"Invalid open mode ({fileMode}).");
                 return false;
@@ -101,7 +101,7 @@ namespace HLLib.Streams
         {
             if (Opened)
             {
-                InternalStream.Close();
+                InternalStream?.Close();
                 InternalStream = null;
                 FileMode = FileModeFlags.HL_MODE_INVALID;
             }
@@ -133,8 +133,6 @@ namespace HLLib.Streams
             int bytesRead = InternalStream.Read(buffer, 0, 1);
             if (bytesRead == 1)
                 chr = (char)buffer[0];
-            else
-                Console.WriteLine("ReadFile() failed.");
 
             return bytesRead == 1;
         }
@@ -151,11 +149,7 @@ namespace HLLib.Streams
                 return 0;
             }
 
-            int bytesRead = InternalStream.Read(data, (int)offset, (int)bytes);
-            if (bytesRead == 0)
-                Console.WriteLine("ReadFile() failed.");
-
-            return bytesRead;
+            return InternalStream.Read(data, (int)offset, (int)bytes);
         }
 
         /// <inheritdoc/>

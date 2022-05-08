@@ -132,7 +132,7 @@ namespace HLLib.Streams
         {
             if (Opened)
             {
-                InternalStream.Close();
+                InternalStream?.Close();
                 InternalStream = null;
                 FileMode = FileModeFlags.HL_MODE_INVALID;
             }
@@ -182,11 +182,7 @@ namespace HLLib.Streams
                 return 0;
             }
 
-            int bytesRead = InternalStream.Read(data, (int)offset, (int)bytes);
-            if (bytesRead == 0)
-                Console.WriteLine("ReadFile() failed.");
-                
-            return bytesRead;
+            return InternalStream.Read(data, (int)offset, (int)bytes);
         }
 
         /// <inheritdoc/>
