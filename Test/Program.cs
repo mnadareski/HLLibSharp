@@ -37,13 +37,17 @@ namespace Test
 
                     // Print all package info
                     Package.PrintPackageInfo(package);
-                    Console.WriteLine();
 
                     // Create the root directory
                     DirectoryFolder rootDirectory = package.GetRoot();
 
+                    // Extract all files
+                    string outputPath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(arg)), Path.GetFileNameWithoutExtension(arg));
+                    rootDirectory.Extract(outputPath, readEncrypted: true, overwrite: true);
+
                     // Close the package explicitly
                     package.Close();
+                    Console.WriteLine();
                 }
                 catch (Exception ex)
                 {
