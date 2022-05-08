@@ -153,7 +153,7 @@ namespace HLLib.Streams
             InternalOpened = false;
             FileMode = FileModeFlags.HL_MODE_INVALID;
 
-            Package.Mapping.Unmap(ref View);
+            Package.Mapping?.Unmap(ref View);
 
             InternalPointer = 0;
             InternalLength = 0;
@@ -242,22 +242,26 @@ namespace HLLib.Streams
                     if (!Map(InternalPointer))
                         break;
 
-                    long viewPointer = InternalPointer - (BlockEntryOffset + DataBlockOffset);
+                    long viewPointer = BlockEntryOffset + DataBlockOffset;
                     long viewBytes = View.Length - viewPointer;
 
-                    if (viewBytes >= bytes)
+                    if (viewBytes > bytes)
                     {
                         Array.Copy(View.ViewData, viewPointer, data, offset, bytes);
                         InternalPointer += bytes;
                         offset += bytes;
                         break;
                     }
-                    else
+                    else if (viewBytes > 0)
                     {
                         Array.Copy(View.ViewData, viewPointer, data, offset, viewBytes);
                         InternalPointer += viewBytes;
                         offset += viewBytes;
                         bytes -= (int)viewBytes;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
 
