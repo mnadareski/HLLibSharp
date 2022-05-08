@@ -415,32 +415,31 @@ namespace HLLib.Packages.WAD
             if (!Mapping.Map(ref view, lump.Offset, (int)lump.DiskLength))
                 return false;
 
-            byte[] data = view.ViewData;
             int dataPointer = 0;
 
             // Type 0x42 has no name, type 0x43 does.  Are these flags?
             if (lump.Type == 0x42)
             {
                 // Get Width.
-                width = BitConverter.ToUInt32(data, dataPointer);
+                width = BitConverter.ToUInt32(view.ViewData, dataPointer);
                 dataPointer += 4;
 
                 // Get Height.
-                height = BitConverter.ToUInt32(data, dataPointer);
+                height = BitConverter.ToUInt32(view.ViewData, dataPointer);
                 dataPointer += 4;
 
                 // Get pixel data.
                 pixels = new byte[width * height];
-                Array.Copy(data, dataPointer, pixels, 0, pixels.Length);
+                Array.Copy(view.ViewData, dataPointer, pixels, 0, pixels.Length);
                 dataPointer += (int)(width * height);
 
                 // Get palette size.
-                paletteSize = BitConverter.ToUInt16(data, dataPointer);
+                paletteSize = BitConverter.ToUInt16(view.ViewData, dataPointer);
                 dataPointer += 2;
 
                 // Get palette.
                 palette = new byte[paletteSize];
-                Array.Copy(data, dataPointer, palette, 0, paletteSize);
+                Array.Copy(view.ViewData, dataPointer, palette, 0, paletteSize);
             }
             else if (lump.Type == 0x43)
             {
@@ -448,19 +447,19 @@ namespace HLLib.Packages.WAD
                 dataPointer += 16;
 
                 // Get Width.
-                width = BitConverter.ToUInt32(data, dataPointer);
+                width = BitConverter.ToUInt32(view.ViewData, dataPointer);
                 dataPointer += 4;
 
                 // Get Height.
-                height = BitConverter.ToUInt32(data, dataPointer);
+                height = BitConverter.ToUInt32(view.ViewData, dataPointer);
                 dataPointer += 4;
 
                 // Get pixel offset.
-                uint pixelOffset = BitConverter.ToUInt32(data, dataPointer);
+                uint pixelOffset = BitConverter.ToUInt32(view.ViewData, dataPointer);
                 dataPointer += 16;
 
                 pixels = new byte[width * height];
-                Array.Copy(data, pixelOffset, pixels, 0, pixels.Length);
+                Array.Copy(view.ViewData, pixelOffset, pixels, 0, pixels.Length);
 
                 uint pixelSize = width * height;
                 switch (mipmap)
@@ -480,15 +479,13 @@ namespace HLLib.Packages.WAD
                 dataPointer += (int)((pixelSize) + (pixelSize / 4) + (pixelSize / 16) + (pixelSize / 64));
 
                 // Get palette size.
-                paletteSize = BitConverter.ToUInt16(data, dataPointer);
+                paletteSize = BitConverter.ToUInt16(view.ViewData, dataPointer);
                 dataPointer += 2;
 
                 // Get palette.
-                palette = new byte[paletteSize];
-                Array.Copy(data, dataPointer, palette, 0, paletteSize);
+                palette = new byte[paletteSize * 3];
+                Array.Copy(view.ViewData, dataPointer, palette, 0, paletteSize);
             }
-
-            //Mapping.Unmap(pView);
 
             switch (mipmap)
             {
