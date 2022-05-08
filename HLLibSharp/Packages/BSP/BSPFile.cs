@@ -423,6 +423,12 @@ namespace HLLib.Packages.BSP
 
             paletteSize = BitConverter.ToUInt16(TextureView.ViewData, (int)(texture.Offsets[0] + pixelSize));
 
+            if (paletteSize == 0 || (int)(paletteSize * 3 + texture.Offsets[0] + pixelSize) > TextureView.ViewData.Length)
+            {
+                Console.WriteLine($"Invalid palette offset '{texture.Offsets[0] + pixelSize}' for {file.Name}");
+                return false;
+            }
+
             palette = new byte[paletteSize * 3];
             Array.Copy(TextureView.ViewData, texture.Offsets[0] + pixelSize + 2, palette, 0, palette.Length);
 
