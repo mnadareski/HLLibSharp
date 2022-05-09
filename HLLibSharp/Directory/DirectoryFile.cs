@@ -120,7 +120,7 @@ namespace HLLib.Directory
             if (string.IsNullOrEmpty(path) || path == "\0")
                 fileName = name;
             else
-                fileName = System.IO.Path.Combine(path, name);
+                fileName = System.IO.Path.Combine(path.Trim(), name);
 
             fileName = FixupIllegalCharacters(fileName);
 

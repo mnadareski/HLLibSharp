@@ -82,9 +82,9 @@ namespace HLLib.Packages.VPK
         {
             List<byte> dataList = new List<byte>();
 
-            dataList.AddRange(Encoding.ASCII.GetBytes(Extension)); dataList.Add(0x00);
-            dataList.AddRange(Encoding.ASCII.GetBytes(Path)); dataList.Add(0x00);
-            dataList.AddRange(Encoding.ASCII.GetBytes(Name)); dataList.Add(0x00);
+            dataList.AddRange(Encoding.ASCII.GetBytes(Extension));
+            dataList.AddRange(Encoding.ASCII.GetBytes(Path));
+            dataList.AddRange(Encoding.ASCII.GetBytes(Name));
             dataList.AddRange(DirectoryEntry.Serialize());
 
             return dataList.ToArray();

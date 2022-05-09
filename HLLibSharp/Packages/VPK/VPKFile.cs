@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using HLLib.Checksums;
 using HLLib.Directory;
@@ -304,40 +305,36 @@ namespace HLLib.Packages.VPK
                 }
             }
 
+            Archives = new VPKArchive[ArchiveCount];
+
             string fileName = Mapping.FileName;
             if (ArchiveCount > 0 && fileName != null)
             {
-                string extension = System.IO.Path.GetExtension(fileName)?.TrimStart('.');
-                if (!string.IsNullOrEmpty(extension) && extension.Length >= 3 && extension != "dir")
+                string extension = Path.GetExtension(fileName)?.TrimStart('.');
+                string archiveFileName = Path.Combine(Path.GetDirectoryName(fileName), Path.GetFileNameWithoutExtension(fileName));
+                if (!string.IsNullOrEmpty(archiveFileName) && archiveFileName.Length >= 3 && archiveFileName.Substring(archiveFileName.Length - 3) == "dir")
                 {
                     // We need 5 digits to print a short, but we already have 3 for dir.
-                    string archiveFileName = fileName;
-
-                    Archives = new VPKArchive[ArchiveCount];
                     for (uint i = 0; i < ArchiveCount; i++)
                     {
-                        archiveFileName += $"{i.ToString().PadLeft(3, '0')}.{extension}";
+                        Archives[i] = new VPKArchive();
                         if (Mapping.FileMode.HasFlag(FileModeFlags.HL_MODE_NO_FILEMAPPING))
                         {
-                            Archives[i].Stream = new FileStream(archiveFileName);
+                            string localFileName = $"{archiveFileName.Substring(0, archiveFileName.Length - 3)}{i.ToString().PadLeft(3, '0')}.{extension}";
+                            Archives[i].Stream = new Streams.FileStream(localFileName);
                             Archives[i].Mapping = new StreamMapping(Archives[i].Stream);
-                            if (!Archives[i].Mapping.Open(Mapping.FileMode, overwrite: true))
+                            if (Archives[i]?.Mapping.Open(Mapping.FileMode, overwrite: true) != true)
                             {
-                                Archives[i].Mapping.Close();
-                                Archives[i].Mapping = null;
-
-                                Archives[i].Stream.Close();
-                                Archives[i].Stream = null;
+                                Archives[i]?.Mapping.Close();
+                                Archives[i]?.Stream.Close();
                             }
                         }
                         else
                         {
-                            Archives[i].Mapping = new FileMapping(archiveFileName);
-                            if (!Archives[i].Mapping.Open(Mapping.FileMode, overwrite: true))
-                            {
-                                Archives[i].Mapping.Close();
-                                Archives[i].Mapping = null;
-                            }
+                            string localFileName = $"{archiveFileName.Substring(0, archiveFileName.Length - 3)}{i.ToString().PadLeft(3, '0')}.{extension}";
+                            Archives[i].Mapping = new FileMapping(localFileName);
+                            if (Archives[i]?.Mapping.Open(Mapping.FileMode, overwrite: true) != true)
+                                Archives[i]?.Mapping.Close();
                         }
                     }
                 }
@@ -353,10 +350,10 @@ namespace HLLib.Packages.VPK
             {
                 for (uint i = 0; i < ArchiveCount; i++)
                 {
-                    if (Archives[i].Mapping != null)
+                    if (Archives[i]?.Mapping != null)
                         Archives[i].Mapping.Close();
 
-                    if (Archives[i].Stream != null)
+                    if (Archives[i]?.Stream != null)
                         Archives[i].Stream.Close();
                 }
             }
@@ -480,7 +477,7 @@ namespace HLLib.Packages.VPK
             {
                 if (extractable)
                 {
-                    if (CreateStreamInternal(file, true, out Stream stream))
+                    if (CreateStreamInternal(file, true, out Streams.Stream stream))
                     {
                         if (stream.Open(FileModeFlags.HL_MODE_READ))
                         {
@@ -557,7 +554,7 @@ namespace HLLib.Packages.VPK
         #region Streams
 
         /// <inheritdoc/>
-        protected override bool CreateStreamInternal(DirectoryFile file, bool readEncrypted, out Stream stream)
+        protected override bool CreateStreamInternal(DirectoryFile file, bool readEncrypted, out Streams.Stream stream)
         {
             stream = null;
             int pointer = 0;
@@ -566,7 +563,7 @@ namespace HLLib.Packages.VPK
             if (directoryItem.DirectoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
             {
                 if (directoryItem.PreloadData != null)
-                    stream = new MemoryStream(directoryItem.PreloadData, (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes));
+                    stream = new Streams.MemoryStream(directoryItem.PreloadData, (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes));
                 else if (directoryItem.DirectoryEntry.PreloadBytes == 0 && directoryItem.DirectoryEntry.EntryLength == 0)
                     stream = new NullStream();
                 else
@@ -574,12 +571,12 @@ namespace HLLib.Packages.VPK
             }
             else if (directoryItem.DirectoryEntry.EntryLength != 0)
             {
-                if (Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping != null)
+                if (Archives[directoryItem.DirectoryEntry.ArchiveIndex]?.Mapping != null)
                 {
                     if (directoryItem.DirectoryEntry.PreloadBytes != 0)
                     {
                         View view = null;
-                        if (!Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Map(ref view, directoryItem.DirectoryEntry.EntryOffset, (int)directoryItem.DirectoryEntry.EntryLength))
+                        if (Archives[directoryItem.DirectoryEntry.ArchiveIndex]?.Mapping.Map(ref view, directoryItem.DirectoryEntry.EntryOffset, (int)directoryItem.DirectoryEntry.EntryLength) != true)
                             return false;
 
                         int bufferSize = (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes);
@@ -589,7 +586,7 @@ namespace HLLib.Packages.VPK
 
                         Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Unmap(ref view);
 
-                        stream = new MemoryStream(buffer, bufferSize);
+                        stream = new Streams.MemoryStream(buffer, bufferSize);
                     }
                     else
                     {
@@ -603,7 +600,7 @@ namespace HLLib.Packages.VPK
             }
             else if (directoryItem.DirectoryEntry.PreloadBytes != 0)
             {
-                stream = new MemoryStream(directoryItem.PreloadData, directoryItem.DirectoryEntry.PreloadBytes);
+                stream = new Streams.MemoryStream(directoryItem.PreloadData, directoryItem.DirectoryEntry.PreloadBytes);
             }
             else
             {
