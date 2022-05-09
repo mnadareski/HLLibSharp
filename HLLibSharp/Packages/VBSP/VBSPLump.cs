@@ -18,7 +18,7 @@ namespace HLLib.Packages.VBSP
         /// <summary>
         /// Total size of a VBSPLump object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 4);
 
         public uint Offset { get; set; }
 
@@ -53,6 +53,5 @@ namespace HLLib.Packages.VBSP
 
             return lump;
         }
-
     }
 }

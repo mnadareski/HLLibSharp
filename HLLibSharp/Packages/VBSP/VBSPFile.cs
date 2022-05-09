@@ -143,19 +143,19 @@ namespace HLLib.Packages.VBSP
             if (Header.Lumps[HL_VBSP_LUMP_ENTITIES].Length != 0)
             {
                 fileName = GetFileName(256 - 4);
-                if (string.IsNullOrEmpty(fileName))
+                if (string.IsNullOrEmpty(fileName) || fileName[0] == '\0')
                     root.AddFile("entities.ent", HL_VBSP_LUMP_ENTITIES);
                 else
-                    root.AddFile(fileName + ".ent", HL_VBSP_LUMP_ENTITIES);
+                    root.AddFile($"{fileName}.ent", HL_VBSP_LUMP_ENTITIES);
             }
 
             if (Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length != 0)
             {
                 fileName = GetFileName(256 - 4);
-                if (string.IsNullOrEmpty(fileName))
+                if (string.IsNullOrEmpty(fileName) || fileName[0] == '\0')
                     root.AddFile("pakfile.zip", HL_VBSP_LUMP_PAKFILE);
                 else
-                    root.AddFile(fileName + ".zip", HL_VBSP_LUMP_PAKFILE);
+                    root.AddFile($"{fileName}.zip", HL_VBSP_LUMP_PAKFILE);
             }
 
             DirectoryFolder lumpFolder = root.AddFolder("lumps");
@@ -164,7 +164,7 @@ namespace HLLib.Packages.VBSP
                 if (Header.Lumps[i].Length > 0)
                 {
                     string temp = GetFileName(256 - 10);
-                    if (string.IsNullOrEmpty(temp))
+                    if (string.IsNullOrEmpty(temp) || fileName[0] == '\0')
                         fileName = $"lump_l_{i}.lmp";
                     else
                         fileName = $"{temp}_l_{i}.lmp";
@@ -173,59 +173,62 @@ namespace HLLib.Packages.VBSP
                 }
             }
 
-            int offset = 0, pointer = 0;
-            while (offset < EndOfCentralDirectoryRecord.CentralDirectorySize - 4)
+            if (EndOfCentralDirectoryRecord != null)
             {
-                uint test = BitConverter.ToUInt32(FileHeaderView.ViewData, offset);
-                switch (test)
+                int offset = 0, pointer = 0;
+                while (offset < EndOfCentralDirectoryRecord.CentralDirectorySize - 4)
                 {
-                    case HL_VBSP_ZIP_FILE_HEADER_SIGNATURE:
-                        pointer = offset;
-                        ZIPFileHeader fileHeader = ZIPFileHeader.Create(FileHeaderView.ViewData, ref pointer);
-                        string headerFileName = fileHeader.FileName;
+                    int test = BitConverter.ToInt32(FileHeaderView.ViewData, offset);
+                    switch (test)
+                    {
+                        case HL_VBSP_ZIP_FILE_HEADER_SIGNATURE:
+                            pointer = offset;
+                            ZIPFileHeader fileHeader = ZIPFileHeader.Create(FileHeaderView.ViewData, ref pointer);
+                            string headerFileName = fileHeader.FileName;
 
-                        // Check if we have just a file, or if the file has directories we need to create.
-                        if (headerFileName.IndexOf('/') == 0 && headerFileName.IndexOf('\\') == 0)
-                        {
-                            root.AddFile(headerFileName, HL_ID_INVALID, FileHeaderView.ViewData);
-                        }
-                        else
-                        {
-                            // Tokenize the file path and create the directories.
-                            DirectoryFolder insertFolder = root;
-
-                            string temp = string.Empty;
-                            string[] token = headerFileName.Split('/', '\\');
-                            int index = 0;
-                            while (index < token.Length)
+                            // Check if we have just a file, or if the file has directories we need to create.
+                            if (headerFileName.IndexOf('/') == 0 && headerFileName.IndexOf('\\') == 0)
                             {
-                                temp = token[index++];
-                                if (index < token.Length)
+                                root.AddFile(headerFileName, HL_ID_INVALID, FileHeaderView.ViewData);
+                            }
+                            else
+                            {
+                                // Tokenize the file path and create the directories.
+                                DirectoryFolder insertFolder = root;
+
+                                string temp = string.Empty;
+                                string[] token = headerFileName.Split('/', '\\');
+                                int index = 0;
+                                while (index < token.Length)
                                 {
-                                    // Check if the directory exists.
-                                    DirectoryItem item = insertFolder.GetItem(temp);
-                                    if (item == null || item.ItemType == DirectoryItemType.HL_ITEM_FILE)
+                                    temp = token[index++];
+                                    if (index < token.Length)
                                     {
-                                        // It doesn't, create it.
-                                        insertFolder = insertFolder.AddFolder(temp);
-                                    }
-                                    else
-                                    {
-                                        // It does, use it.
-                                        insertFolder = (DirectoryFolder)item;
+                                        // Check if the directory exists.
+                                        DirectoryItem item = insertFolder.GetItem(temp);
+                                        if (item == null || item.ItemType == DirectoryItemType.HL_ITEM_FILE)
+                                        {
+                                            // It doesn't, create it.
+                                            insertFolder = insertFolder.AddFolder(temp);
+                                        }
+                                        else
+                                        {
+                                            // It does, use it.
+                                            insertFolder = (DirectoryFolder)item;
+                                        }
                                     }
                                 }
+
+                                // The file name is the last token, add it.
+                                insertFolder.AddFile(temp, HL_ID_INVALID, FileHeaderView.ViewData);
                             }
 
-                            // The file name is the last token, add it.
-                            insertFolder.AddFile(temp, HL_ID_INVALID, FileHeaderView.ViewData);
-                        }
-
-                        offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
-                        break;
-                    default:
-                        offset = (int)EndOfCentralDirectoryRecord.CentralDirectorySize;
-                        break;
+                            offset += ZIPFileHeader.ObjectSize + fileHeader.FileNameLength + fileHeader.ExtraFieldLength + fileHeader.FileCommentLength;
+                            break;
+                        default:
+                            offset = (int)EndOfCentralDirectoryRecord.CentralDirectorySize;
+                            break;
+                    }
                 }
             }
 

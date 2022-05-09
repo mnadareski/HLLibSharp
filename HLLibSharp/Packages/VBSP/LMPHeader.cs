@@ -18,7 +18,7 @@ namespace HLLib.Packages.VBSP
         /// <summary>
         /// Total size of a LMPHeader object
         /// </summary>
-        public const int ObjectSize = 4 + 4 + 4 + 4 + 4;
+        public const int ObjectSize = (4 * 5);
 
         public int LumpOffset { get; set; }
 
