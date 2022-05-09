@@ -265,16 +265,20 @@ namespace HLLib.Packages.VBSP
                 return false;
             }
 
-            if (Header.Version >= 21 && Header.Version != 0x00040014)
-            {
-                for (int i = 0; i < Header.Lumps.Length; i++)
-                {
-                    uint temp = Header.Lumps[i].Version;
-                    Header.Lumps[i].Version = Header.Lumps[i].Offset;
-                    Header.Lumps[i].Offset = Header.Lumps[i].Length;
-                    Header.Lumps[i].Length = temp;
-                }
-            }
+            // This block was commented out because test VBSPs with header
+            // version 21 had the values in the "right" order already and
+            // were causing decompression issues
+
+            //if (Header.Version >= 21 && Header.Version != 0x00040014)
+            //{
+            //    for (int i = 0; i < Header.Lumps.Length; i++)
+            //    {
+            //        uint temp = Header.Lumps[i].Version;
+            //        Header.Lumps[i].Version = Header.Lumps[i].Offset;
+            //        Header.Lumps[i].Offset = Header.Lumps[i].Length;
+            //        Header.Lumps[i].Length = temp;
+            //    }
+            //}
 
             if (ZIPEndOfCentralDirectoryRecord.ObjectSize <= Header.Lumps[HL_VBSP_LUMP_PAKFILE].Length)
             {
