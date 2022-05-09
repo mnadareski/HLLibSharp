@@ -1,6 +1,6 @@
-/*
+﻿/*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2013 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,10 +35,36 @@
  * Mark Adler madler@alumni.caltech.edu
  */
 
-namespace HLLib
+using System;
+
+namespace HLLib.Checksums
 {
-    public static class Checksum
+    public abstract class Checksum
     {
+        /// <summary>
+        /// Get the size of the digest in bytes
+        /// </summary>
+        public abstract uint DigestSize { get; }
+
+        /// <summary>
+        /// Initialize the checksum
+        /// </summary>
+        public abstract void Initialize();
+
+        /// <summary>
+        /// Update the internal digest with a given buffer
+        /// </summary>
+        /// <param name="buffer">Byte array representing the data to checksum</param>
+        /// <param name="bufferSize">Amount of data in the buffer to process</param>
+        public abstract void Update(byte[] buffer, int bufferSize);
+
+        /// <summary>
+        /// Finalize and return the checksum hash
+        /// </summary>
+        /// <param name="hash">Array where the checksum will be returned</param>
+        /// <returns>True if finalization was successful, false otherwise</returns>
+        public abstract bool Finalize(out byte[] hash);
+
         #region Adler-32
 
         /// <summary>
@@ -74,7 +100,7 @@ namespace HLLib
                 low += buffer[0];
                 if (low >= BASE)
                     low -= BASE;
-                
+
                 high += low;
                 if (high >= BASE)
                     high -= BASE;
