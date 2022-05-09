@@ -1,6 +1,6 @@
 ﻿/*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2013 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,6 +76,16 @@ namespace HLLib.Packages.VPK
         public VPKHeader Header { get; private set; }
 
         /// <summary>
+        /// Deserialized extended header data
+        /// </summary>
+        public VPKExtendedHeader ExtendedHeader { get; private set; }
+
+        /// <summary>
+        /// Deserialized archive hashes data
+        /// </summary>
+        public VPKArchiveHash[] ArchiveHashes { get; private set; }
+
+        /// <summary>
         /// Deserialized directory items data
         /// </summary>
         public List<VPKDirectoryItem> DirectoryItems { get; private set; }
@@ -134,7 +144,7 @@ namespace HLLib.Packages.VPK
                 else
                 {
                     insertFolder = root;
-                    if (!string.IsNullOrWhiteSpace(directoryItem.Path))
+                    if (!string.IsNullOrWhiteSpace(directoryItem.Path) && directoryItem.Path[0] != '\0')
                     {
                         // Tokenize the file path and create the directories.
                         string path = directoryItem.Path;
@@ -198,11 +208,30 @@ namespace HLLib.Packages.VPK
             }
             else
             {
+                if (Header.Version > 2)
+                {
+                    Console.WriteLine($"Invalid VPK version (v{Header.Version}): you have a version of a VPK file that HLLib does not know how to read. Check for product updates.");
+                    return false;
+                }
+
                 viewData += VPKHeader.ObjectSize;
+                if (Header.Version >= 2)
+                {
+                    ExtendedHeader = VPKExtendedHeader.Create(View.ViewData, ref pointer);
+                    viewData += VPKExtendedHeader.ObjectSize;
+                }
+
                 viewDirectoryDataEnd = (int)(viewData + Header.DirectoryLength);
+                if (ExtendedHeader != null)
+                {
+                    pointer = viewDirectoryDataEnd;
+
+                    // TODO: Figure out how many archive hashes there are to populate from pointer
+                    ArchiveHashes = null;
+                }
             }
 
-            while (viewData < viewDirectoryDataEnd)
+            while (true)
             {
                 if (!MapString(ref viewData, viewDirectoryDataEnd, out int extension))
                     return false;
@@ -240,28 +269,25 @@ namespace HLLib.Packages.VPK
                         viewData += VPKDirectoryEntry.ObjectSize;
 
                         int preloadDataPointer = -1;
-                        if (directoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
+                        if (directoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE && directoryEntry.EntryLength > 0)
                         {
-                            if (directoryEntry.EntryLength > 0)
-                            {
-                                if (viewDirectoryDataEnd + directoryEntry.EntryOffset + directoryEntry.EntryLength <= viewDataEnd)
-                                    preloadDataPointer = (int)(viewDirectoryDataEnd + directoryEntry.EntryOffset);
-                            }
+                            if (viewDirectoryDataEnd + directoryEntry.EntryOffset + directoryEntry.EntryLength <= viewDataEnd)
+                                preloadDataPointer = (int)(viewDirectoryDataEnd + directoryEntry.EntryOffset);
                         }
-                        else
+                        else if (directoryEntry.PreloadBytes > 0)
                         {
-                            if (directoryEntry.PreloadBytes > 0)
+                            if (viewData + directoryEntry.PreloadBytes > viewDirectoryDataEnd)
                             {
-                                if (viewData + directoryEntry.PreloadBytes > viewDirectoryDataEnd)
-                                {
-                                    Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
-                                    return false;
-                                }
-
-                                preloadDataPointer = viewData;
-                                viewData += directoryEntry.PreloadBytes;
+                                Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
+                                return false;
                             }
 
+                            preloadDataPointer = viewData;
+                            viewData += directoryEntry.PreloadBytes;
+                        }
+
+                        if (directoryEntry.ArchiveIndex != HL_VPK_NO_ARCHIVE)
+                        {
                             if ((uint)directoryEntry.ArchiveIndex + 1 > ArchiveCount)
                                 ArchiveCount = (uint)directoryEntry.ArchiveIndex + 1;
                         }
@@ -281,8 +307,8 @@ namespace HLLib.Packages.VPK
             string fileName = Mapping.FileName;
             if (ArchiveCount > 0 && fileName != null)
             {
-                int extensionPointer = fileName.IndexOf('.');
-                if (extensionPointer != 0 && fileName.Length - extensionPointer > 3 && fileName.Substring(extensionPointer, 3) != "dir")
+                string extension = System.IO.Path.GetExtension(fileName)?.TrimStart('.');
+                if (!string.IsNullOrEmpty(extension) && extension.Length >= 3 && extension != "dir")
                 {
                     // We need 5 digits to print a short, but we already have 3 for dir.
                     string archiveFileName = fileName;
@@ -290,7 +316,7 @@ namespace HLLib.Packages.VPK
                     Archives = new VPKArchive[ArchiveCount];
                     for (uint i = 0; i < ArchiveCount; i++)
                     {
-                        archiveFileName += $"{i.ToString().PadLeft(3, '0')}.{fileName.Substring(extensionPointer, 3)}";
+                        archiveFileName += $"{i.ToString().PadLeft(3, '0')}.{extension}";
                         if (Mapping.FileMode.HasFlag(FileModeFlags.HL_MODE_NO_FILEMAPPING))
                         {
                             Archives[i].Stream = new FileStream(archiveFileName);
@@ -363,8 +389,7 @@ namespace HLLib.Packages.VPK
                     return false;
                 }
 
-                bool mapped = View.ViewData[viewData++] == '\0';
-                if (mapped)
+                if (View.ViewData[viewData++] == '\0')
                     return true;
             }
         }
@@ -429,7 +454,7 @@ namespace HLLib.Packages.VPK
             VPKDirectoryItem directoryItem = VPKDirectoryItem.Create(file.Data, ref pointer);
             if (directoryItem.DirectoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
             {
-                extractable = directoryItem.PreloadData != null;
+                extractable = directoryItem.PreloadData != null || (directoryItem.DirectoryEntry.PreloadBytes == 0 && directoryItem.DirectoryEntry.EntryLength == 0);
             }
             else if (directoryItem.DirectoryEntry.EntryLength != 0)
             {
@@ -523,41 +548,7 @@ namespace HLLib.Packages.VPK
         {
             int pointer = 0;
             VPKDirectoryItem directoryItem = VPKDirectoryItem.Create(file.Data, ref pointer);
-            if (directoryItem.DirectoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
-            {
-                if (directoryItem.PreloadData == null)
-                    size = 0;
-                else
-                    size = (int)directoryItem.DirectoryEntry.EntryLength;
-            }
-            else if (directoryItem.DirectoryEntry.EntryLength != 0)
-            {
-                size = (int)directoryItem.DirectoryEntry.EntryLength;
-                Mapping mapping = Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping;
-                if (mapping == null)
-                {
-                    size = 0;
-                }
-                else
-                {
-                    uint mappingSize = (uint)mapping.MappingSize;
-                    if (directoryItem.DirectoryEntry.EntryOffset >= mappingSize)
-                    {
-                        size = 0;
-                    }
-                    else if (directoryItem.DirectoryEntry.EntryOffset + size > mappingSize)
-                    {
-                        size = (int)(mappingSize - directoryItem.DirectoryEntry.EntryOffset);
-                    }
-                }
-
-                size += directoryItem.DirectoryEntry.PreloadBytes;
-            }
-            else
-            {
-                size = directoryItem.DirectoryEntry.PreloadBytes;
-            }
-
+            size = (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes);
             return true;
         }
 
@@ -571,16 +562,19 @@ namespace HLLib.Packages.VPK
             stream = null;
             int pointer = 0;
             VPKDirectoryItem directoryItem = VPKDirectoryItem.Create(file.Data, ref pointer);
-            if (directoryItem.DirectoryEntry.EntryLength != 0)
+
+            if (directoryItem.DirectoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
             {
-                if (directoryItem.DirectoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
-                {
-                    if (directoryItem.PreloadData != null)
-                        stream = new MemoryStream(directoryItem.PreloadData, (int)directoryItem.DirectoryEntry.EntryLength);
-                    else
-                        return false;
-                }
-                else if (Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping != null)
+                if (directoryItem.PreloadData != null)
+                    stream = new MemoryStream(directoryItem.PreloadData, (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes));
+                else if (directoryItem.DirectoryEntry.PreloadBytes == 0 && directoryItem.DirectoryEntry.EntryLength == 0)
+                    stream = new NullStream();
+                else
+                    return false;
+            }
+            else if (directoryItem.DirectoryEntry.EntryLength != 0)
+            {
+                if (Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping != null)
                 {
                     if (directoryItem.DirectoryEntry.PreloadBytes != 0)
                     {
@@ -589,13 +583,13 @@ namespace HLLib.Packages.VPK
                             return false;
 
                         int bufferSize = (int)(directoryItem.DirectoryEntry.EntryLength + directoryItem.DirectoryEntry.PreloadBytes);
-                        byte[] lpBuffer = new byte[bufferSize];
-                        Array.Copy(directoryItem.PreloadData, 0, lpBuffer, 0, directoryItem.DirectoryEntry.PreloadBytes);
-                        Array.Copy(view.ViewData, 0, lpBuffer, directoryItem.DirectoryEntry.PreloadBytes, directoryItem.DirectoryEntry.EntryLength);
+                        byte[] buffer = new byte[bufferSize];
+                        Array.Copy(directoryItem.PreloadData, 0, buffer, 0, directoryItem.DirectoryEntry.PreloadBytes);
+                        Array.Copy(view.ViewData, 0, buffer, directoryItem.DirectoryEntry.PreloadBytes, directoryItem.DirectoryEntry.EntryLength);
 
                         Archives[directoryItem.DirectoryEntry.ArchiveIndex].Mapping.Unmap(ref view);
 
-                        stream = new MemoryStream(lpBuffer, bufferSize);
+                        stream = new MemoryStream(buffer, bufferSize);
                     }
                     else
                     {
