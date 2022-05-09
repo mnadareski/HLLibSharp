@@ -13,7 +13,7 @@ namespace HLLib.Packages.GCF
 {
     using System;
 
-    public class GCFChecksumEntry
+    public sealed class GCFChecksumEntry
     {
         /// <summary>
         /// Total size of a GCFChecksumEntry object

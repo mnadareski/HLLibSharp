@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.VBSP
 {
-    public class LMPHeader
+    public sealed class LMPHeader
     {
         /// <summary>
         /// Total size of a LMPHeader object

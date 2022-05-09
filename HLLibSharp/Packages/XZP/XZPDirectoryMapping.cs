@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.XZP
 {
-    public class XZPDirectoryMapping
+    public sealed class XZPDirectoryMapping
     {
         /// <summary>
         /// Total size of a XZPDirectoryMapping object

@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.GCF
 {
-    public class GCFFragmentationMapHeader
+    public sealed class GCFFragmentationMapHeader
     {
         /// <summary>
         /// Total size of a GCFFragmentationMapHeader object

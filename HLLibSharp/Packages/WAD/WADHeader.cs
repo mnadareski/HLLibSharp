@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.WAD
 {
-    public class WADHeader
+    public sealed class WADHeader
     {
         /// <summary>
         /// Total size of a WADHeader object

@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.GCF
 {
-    public class GCFDataBlockHeader
+    public sealed class GCFDataBlockHeader
     {
         /// <summary>
         /// Total size of a GCFDataBlockHeader object

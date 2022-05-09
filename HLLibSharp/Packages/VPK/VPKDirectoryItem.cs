@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.VPK
 {
-    public class VPKDirectoryItem
+    public sealed class VPKDirectoryItem
     {
         public string Extension { get; set; }
 

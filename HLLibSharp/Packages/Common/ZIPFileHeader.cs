@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.Common
 {
-    public class ZIPFileHeader
+    public sealed class ZIPFileHeader
     {
         /// <summary>
         /// Total size of a ZIPFileHeader object

@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.BSP
 {
-    public class BSPHeader
+    public sealed class BSPHeader
     {
         /// <summary>
         /// Total size of a BSPHeader object

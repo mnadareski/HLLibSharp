@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.NCF
 {
-    public class NCFUnknownHeader
+    public sealed class NCFUnknownHeader
     {
         /// <summary>
         /// Total size of a NCFUnknownHeader object

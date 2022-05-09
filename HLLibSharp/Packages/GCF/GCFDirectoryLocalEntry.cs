@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.GCF
 {
-    public class GCFDirectoryLocalEntry
+    public sealed class GCFDirectoryLocalEntry
     {
         /// <summary>
         /// Total size of a GCFDirectoryLocalEntry object

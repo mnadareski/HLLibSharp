@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.GCF
 {
-    public class GCFChecksumHeader
+    public sealed class GCFChecksumHeader
     {
         /// <summary>
         /// Total size of a GCFChecksumHeader object

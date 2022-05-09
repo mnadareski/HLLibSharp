@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.PAK
 {
-    public class PAKDirectoryItem
+    public sealed class PAKDirectoryItem
     {
         /// <summary>
         /// Total size of a PAKDirectoryItem object

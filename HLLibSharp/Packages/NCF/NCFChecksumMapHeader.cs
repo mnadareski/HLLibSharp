@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.NCF
 {
-    public class NCFChecksumMapHeader
+    public sealed class NCFChecksumMapHeader
     {
         /// <summary>
         /// Total size of a NCFChecksumMapHeader object

@@ -16,7 +16,7 @@ namespace HLLib.Packages.GCF
     /// <remarks>
     /// Part of version 5 but not version 6.
     /// </remarks>
-    public class GCFBlockEntryMap
+    public sealed class GCFBlockEntryMap
     {
         /// <summary>
         /// Total size of a GCFBlockEntryMap object

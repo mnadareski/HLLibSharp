@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.VPK
 {
-    public class VPKDirectoryEntry
+    public sealed class VPKDirectoryEntry
     {
         /// <summary>
         /// Total size of a VPKDirectoryEntry object

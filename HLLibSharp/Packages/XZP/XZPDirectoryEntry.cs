@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.XZP
 {
-    public class XZPDirectoryEntry
+    public sealed class XZPDirectoryEntry
     {
         /// <summary>
         /// Total size of a XZPDirectoryEntry object

@@ -14,50 +14,50 @@ using System.Text;
 
 namespace HLLib.Packages.XZP
 {
-	public class XZPHeader
+    public sealed class XZPHeader
     {
-		/// <summary>
-		/// Total size of a XZPHeader object
-		/// </summary>
-		public const int ObjectSize = 4 * 9;
+        /// <summary>
+        /// Total size of a XZPHeader object
+        /// </summary>
+        public const int ObjectSize = 4 * 9;
 
-		public string Signature { get; set; }
+        public string Signature { get; set; }
 
-		public uint Version { get; set; }
+        public uint Version { get; set; }
 
-		public uint PreloadDirectoryEntryCount { get; set; }
+        public uint PreloadDirectoryEntryCount { get; set; }
 
-		public uint DirectoryEntryCount { get; set; }
+        public uint DirectoryEntryCount { get; set; }
 
-		public uint PreloadBytes { get; set; }
+        public uint PreloadBytes { get; set; }
 
-		public uint HeaderLength { get; set; }
+        public uint HeaderLength { get; set; }
 
-		public uint DirectoryItemCount { get; set; }
+        public uint DirectoryItemCount { get; set; }
 
-		public uint DirectoryItemOffset { get; set; }
+        public uint DirectoryItemOffset { get; set; }
 
-		public uint DirectoryItemLength { get; set; }
+        public uint DirectoryItemLength { get; set; }
 
-		public static XZPHeader Create(byte[] data, ref int offset)
-		{
-			XZPHeader header = new XZPHeader();
+        public static XZPHeader Create(byte[] data, ref int offset)
+        {
+            XZPHeader header = new XZPHeader();
 
-			// Check to see if the data is valid
-			if (data == null || data.Length < ObjectSize)
-				return null;
+            // Check to see if the data is valid
+            if (data == null || data.Length < ObjectSize)
+                return null;
 
-			header.Signature = Encoding.ASCII.GetString(data, offset, 4); offset += 4;
-			header.Version = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.PreloadDirectoryEntryCount = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.DirectoryEntryCount = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.PreloadBytes = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.HeaderLength = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.DirectoryItemCount = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.DirectoryItemOffset = BitConverter.ToUInt32(data, offset); offset += 4;
-			header.DirectoryItemLength = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.Signature = Encoding.ASCII.GetString(data, offset, 4); offset += 4;
+            header.Version = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.PreloadDirectoryEntryCount = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.DirectoryEntryCount = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.PreloadBytes = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.HeaderLength = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.DirectoryItemCount = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.DirectoryItemOffset = BitConverter.ToUInt32(data, offset); offset += 4;
+            header.DirectoryItemLength = BitConverter.ToUInt32(data, offset); offset += 4;
 
-			return header;
-		}
-	}
+            return header;
+        }
+    }
 }

@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.VPK
 {
-    public class VPKHeader
+    public sealed class VPKHeader
     {
         /// <summary>
         /// Total size of a VPKHeader object

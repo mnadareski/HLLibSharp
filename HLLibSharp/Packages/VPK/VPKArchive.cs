@@ -14,7 +14,7 @@ using HLLib.Streams;
 
 namespace HLLib.Packages.VPK
 {
-    public class VPKArchive
+    public sealed class VPKArchive
     {
         public Stream Stream { get; set; }
 

@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.VBSP
 {
-    public class VBSPLump
+    public sealed class VBSPLump
     {
         /// <summary>
         /// Total size of a VBSPLump object

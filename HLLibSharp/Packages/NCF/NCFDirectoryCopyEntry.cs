@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.NCF
 {
-    public class NCFDirectoryCopyEntry
+    public sealed class NCFDirectoryCopyEntry
     {
         /// <summary>
         /// Total size of a NCFDirectoryCopyEntry object

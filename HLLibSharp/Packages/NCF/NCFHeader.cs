@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace HLLib.Packages.NCF
 {
-    public class NCFHeader
+    public sealed class NCFHeader
     {
         /// <summary>
         /// Total size of a NCFHeader object

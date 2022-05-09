@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.WAD
 {
-    public class WADLumpInfo
+    public sealed class WADLumpInfo
     {
         /// <summary>
         /// Total size of a WADLumpInfo object

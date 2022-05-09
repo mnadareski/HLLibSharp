@@ -16,7 +16,7 @@ namespace HLLib.Packages.GCF
     /// <remarks>
     /// Added in version 4 or version 5.
     /// </remarks>
-    public class GCFDirectoryMapHeader
+    public sealed class GCFDirectoryMapHeader
     {
         /// <summary>
         /// Total size of a GCFDirectoryMapHeader object

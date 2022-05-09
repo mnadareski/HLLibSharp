@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.BSP
 {
-    public class BSPLump
+    public sealed class BSPLump
     {
         /// <summary>
         /// Total size of a BSPLump object

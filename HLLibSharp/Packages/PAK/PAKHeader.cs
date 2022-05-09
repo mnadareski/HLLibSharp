@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.PAK
 {
-    public class PAKHeader
+    public sealed class PAKHeader
     {
         /// <summary>
         /// Total size of a PAKHeader object

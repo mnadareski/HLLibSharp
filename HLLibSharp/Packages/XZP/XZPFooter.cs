@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.XZP
 {
-    public class XZPFooter
+    public sealed class XZPFooter
     {
         /// <summary>
         /// Total size of a XZPFooter object

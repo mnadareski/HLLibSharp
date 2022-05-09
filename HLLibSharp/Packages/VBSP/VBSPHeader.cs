@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.VBSP
 {
-    public class VBSPHeader
+    public sealed class VBSPHeader
     {
         /// <summary>
         /// Total size of a VBSPHeader object

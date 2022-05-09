@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace HLLib.Packages.GCF
 {
-    public class GCFHeader
+    public sealed class GCFHeader
     {
         /// <summary>
         /// Total size of a GCFHeader object

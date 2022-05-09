@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.Common
 {
-    public class ZIPEndOfCentralDirectoryRecord
+    public sealed class ZIPEndOfCentralDirectoryRecord
     {
         /// <summary>
         /// Total size of a ZIPEndOfCentralDirectoryRecord object

@@ -13,7 +13,7 @@ using System;
 
 namespace HLLib.Packages.VPK
 {
-    public class VPKArchiveHash
+    public sealed class VPKArchiveHash
     {
         /// <summary>
         /// Total size of a VPKArchiveHash object

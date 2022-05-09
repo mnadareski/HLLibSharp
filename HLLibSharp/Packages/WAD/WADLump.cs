@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.WAD
 {
-    public class WADLump
+    public sealed class WADLump
     {
         /// <summary>
         /// Total size of a WADLump object

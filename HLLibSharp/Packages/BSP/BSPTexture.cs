@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.BSP
 {
-    public class BSPTexture
+    public sealed class BSPTexture
     {
         /// <summary>
         /// Total size of a BSPTexture object

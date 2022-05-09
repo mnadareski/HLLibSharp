@@ -10,7 +10,7 @@ using System;
 
 namespace HLLib.Packages.Common
 {
-    public class BITMAPFILEHEADER
+    public sealed class BITMAPFILEHEADER
     {
         /// <summary>
         /// Total size of a BITMAPFILEHEADER object

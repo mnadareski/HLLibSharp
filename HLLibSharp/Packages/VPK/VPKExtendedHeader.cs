@@ -16,7 +16,7 @@ namespace HLLib.Packages.VPK
     /// <summary>
     /// Added in version 2.
     /// </summary>
-    public class VPKExtendedHeader
+    public sealed class VPKExtendedHeader
     {
         /// <summary>
         /// Total size of a VPKExtendedHeader object
