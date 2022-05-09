@@ -90,7 +90,7 @@ namespace HLLib.Directory
             }
 
             temp.Reverse();
-            string tempPath = string.Join(System.IO.Path.DirectorySeparatorChar.ToString(), temp);
+            string tempPath = System.IO.Path.Combine(temp.ToArray());
             if (pathSize > 0)
                 tempPath = tempPath.Substring(0, Math.Min(pathSize, tempPath.Length));
 
