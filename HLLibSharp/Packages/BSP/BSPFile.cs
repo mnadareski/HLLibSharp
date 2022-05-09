@@ -114,7 +114,7 @@ namespace HLLib.Packages.BSP
             if (Header.Lumps[HL_BSP_LUMP_ENTITIES].Length != 0)
             {
                 string fileName = GetFileName(256 - 4);
-                if (fileName[fileName.Length - 4] == '\0')
+                if (fileName[0] == '\0')
                     root.AddFile("entities.ent", TextureHeader.TextureCount);
                 else
                     root.AddFile($"{fileName}.ent", TextureHeader.TextureCount);
@@ -152,7 +152,7 @@ namespace HLLib.Packages.BSP
 
             int pointer = 0;
             Header = BSPHeader.Create(HeaderView.ViewData, ref pointer);
-            if (Header.Version != 30)
+            if (Header.Version != 30 && Header.Version != 29)
             {
                 Console.WriteLine($"Invalid BSP version (v{Header.Version}): you have a version of a BSP file that HLLib does not know how to read. Check for product updates.");
                 return false;
@@ -403,34 +403,22 @@ namespace HLLib.Packages.BSP
             width = texture.Width;
             height = texture.Height;
 
-            int pixelSize = 0;
+            uint pixelSize = 0;
             for (int i = 0; i < HL_BSP_MIPMAP_COUNT; i++)
             {
                 if (texture.Offsets[i] != 0)
                 {
-                    pixelSize += (int)((width >> i) * (height >> i));
+                    pixelSize += (width >> i) * (height >> i);
                 }
             }
 
-            if (pixelSize == 0)
-            {
-                Console.WriteLine($"No writable pixels found for {file.Name}");
-                return false;
-            }
-
             pixels = new byte[pixelSize];
-            Array.Copy(TextureView.ViewData, texture.Offsets[mipmap], pixels, 0, pixelSize);
+            Array.Copy(TextureView.ViewData, TextureHeader.Offsets[file.ID] + texture.Offsets[mipmap], pixels, 0, pixelSize);
 
-            paletteSize = BitConverter.ToUInt16(TextureView.ViewData, (int)(texture.Offsets[0] + pixelSize));
-
-            if (paletteSize == 0 || (int)(paletteSize * 3 + texture.Offsets[0] + pixelSize) > TextureView.ViewData.Length)
-            {
-                Console.WriteLine($"Invalid palette offset '{texture.Offsets[0] + pixelSize}' for {file.Name}");
-                return false;
-            }
+            paletteSize = BitConverter.ToUInt16(TextureView.ViewData, (int)(TextureHeader.Offsets[file.ID] + texture.Offsets[0] + pixelSize));
 
             palette = new byte[paletteSize * 3];
-            Array.Copy(TextureView.ViewData, texture.Offsets[0] + pixelSize + 2, palette, 0, palette.Length);
+            Array.Copy(TextureView.ViewData, TextureHeader.Offsets[file.ID] + texture.Offsets[0] + pixelSize + 2, palette, 0, palette.Length);
 
             switch (mipmap)
             {
