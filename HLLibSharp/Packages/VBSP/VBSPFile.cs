@@ -164,12 +164,11 @@ namespace HLLib.Packages.VBSP
                 if (Header.Lumps[i].Length > 0)
                 {
                     string temp = GetFileName(256 - 10);
-                    if (string.IsNullOrEmpty(temp) || fileName[0] == '\0')
-                        fileName = $"lump_l_{i}.lmp";
+                    if (string.IsNullOrEmpty(temp) || temp[0] == '\0')
+                        lumpFolder.AddFile($"lump_l_{i}.lmp", (uint)(Header.Lumps.Length + i));
                     else
-                        fileName = $"{temp}_l_{i}.lmp";
+                        lumpFolder.AddFile($"{temp}_l_{i}.lmp", (uint)(Header.Lumps.Length + i));
 
-                    lumpFolder.AddFile(fileName, (uint)(Header.Lumps.Length + i));
                 }
             }
 
