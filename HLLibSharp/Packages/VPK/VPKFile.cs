@@ -177,7 +177,7 @@ namespace HLLib.Packages.VPK
 
             DirectoryItems = new List<VPKDirectoryItem>();
 
-            int viewDataStart = 0;
+            int viewData = 0;
             int viewDataEnd = View.Length;
             int viewDirectoryDataEnd = viewDataEnd;
 
@@ -197,46 +197,46 @@ namespace HLLib.Packages.VPK
             }
             else
             {
-                viewDataStart += VPKHeader.ObjectSize;
-                viewDirectoryDataEnd = (int)(viewDataStart + Header.DirectoryLength);
+                viewData += VPKHeader.ObjectSize;
+                viewDirectoryDataEnd = (int)(viewData + Header.DirectoryLength);
             }
 
-            while (viewDataStart != viewDirectoryDataEnd)
+            while (viewData < viewDirectoryDataEnd)
             {
-                if (!MapString(View.ViewData, ref viewDataStart, viewDirectoryDataEnd, out int extension))
+                if (!MapString(ref viewData, viewDirectoryDataEnd, out int extension))
                     return false;
 
-                string extensionString = Encoding.ASCII.GetString(View.ViewData, extension, viewDataStart - extension);
+                string extensionString = Encoding.ASCII.GetString(View.ViewData, extension, viewData - extension);
                 if (View.ViewData[extension] == '\0')
                     break;
 
                 while (true)
                 {
-                    if (!MapString(View.ViewData, ref viewDataStart, viewDirectoryDataEnd, out int path))
+                    if (!MapString(ref viewData, viewDirectoryDataEnd, out int path))
                         return false;
 
-                    string pathString = Encoding.ASCII.GetString(View.ViewData, path, viewDataStart - path);
+                    string pathString = Encoding.ASCII.GetString(View.ViewData, path, viewData - path);
                     if (View.ViewData[path] == '\0')
                         break;
 
                     while (true)
                     {
-                        if (!MapString(View.ViewData, ref viewDataStart, viewDirectoryDataEnd, out int name))
+                        if (!MapString(ref viewData, viewDirectoryDataEnd, out int name))
                             return false;
 
-                        string nameString = Encoding.ASCII.GetString(View.ViewData, name, viewDataStart - name);
+                        string nameString = Encoding.ASCII.GetString(View.ViewData, name, viewData - name);
                         if (View.ViewData[name] == '\0')
                             break;
 
-                        if (viewDataStart + VPKDirectoryEntry.ObjectSize > viewDirectoryDataEnd)
+                        if (viewData + VPKDirectoryEntry.ObjectSize > viewDirectoryDataEnd)
                         {
                             Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
                             return false;
                         }
 
-                        pointer = viewDataStart;
+                        pointer = viewData;
                         VPKDirectoryEntry directoryEntry = VPKDirectoryEntry.Create(View.ViewData, ref pointer);
-                        viewDataStart += VPKDirectoryEntry.ObjectSize;
+                        viewData += VPKDirectoryEntry.ObjectSize;
 
                         int preloadDataPointer = -1;
                         if (directoryEntry.ArchiveIndex == HL_VPK_NO_ARCHIVE)
@@ -251,14 +251,14 @@ namespace HLLib.Packages.VPK
                         {
                             if (directoryEntry.PreloadBytes > 0)
                             {
-                                if (viewDataStart + directoryEntry.PreloadBytes > viewDirectoryDataEnd)
+                                if (viewData + directoryEntry.PreloadBytes > viewDirectoryDataEnd)
                                 {
                                     Console.WriteLine("Invalid file: The file map is not within mapping bounds.");
                                     return false;
                                 }
 
-                                preloadDataPointer = viewDataStart;
-                                viewDataStart += directoryEntry.PreloadBytes;
+                                preloadDataPointer = viewData;
+                                viewData += directoryEntry.PreloadBytes;
                             }
 
                             if ((uint)directoryEntry.ArchiveIndex + 1 > ArchiveCount)
@@ -269,7 +269,7 @@ namespace HLLib.Packages.VPK
                         if (preloadDataPointer > -1)
                         {
                             preloadData = new byte[viewDirectoryDataEnd - viewDataEnd];
-                            Array.Copy(View.ViewData, viewDataStart, preloadData, 0, preloadData.Length);
+                            Array.Copy(View.ViewData, viewData, preloadData, 0, preloadData.Length);
                         }
 
                         DirectoryItems.Add(new VPKDirectoryItem(extensionString, pathString, nameString, directoryEntry, preloadData));
@@ -347,23 +347,22 @@ namespace HLLib.Packages.VPK
         /// <summary>
         /// Find a single string in the view data
         /// </summary>
-        /// <param name="viewData">View data to search through</param>
-        /// <param name="viewDataStart">Start of where to search in the view</param>
+        /// <param name="viewData">Current position in the view</param>
         /// <param name="viewDirectoryDataEnd">End of the directory data</param>
-        /// <param name="viewDataEnd">Output value representing the end of the string</param>
+        /// <param name="viewDataStart">Output value representing the start of the string</param>
         /// <returns>True if the string could be found, false otherwise</returns>
-        private bool MapString(byte[] viewData, ref int viewDataStart, int viewDirectoryDataEnd, out int viewDataEnd)
+        private bool MapString(ref int viewData, int viewDirectoryDataEnd, out int viewDataStart)
         {
-            viewDataEnd = viewDataStart;
+            viewDataStart = viewData;
             while (true)
             {
-                if (viewDataStart == viewDirectoryDataEnd)
+                if (viewData == viewDirectoryDataEnd)
                 {
                     Console.WriteLine("Invalid file: Mapping bounds exceeded while searching for string null terminator.");
                     return false;
                 }
 
-                bool mapped = viewData[viewDataStart++] == '\0';
+                bool mapped = View.ViewData[viewData++] == '\0';
                 if (mapped)
                     return true;
             }
