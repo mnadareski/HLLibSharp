@@ -11,6 +11,7 @@
 
 using System;
 using System.Linq;
+using HLLib.Checksums;
 using HLLib.Directory;
 using HLLib.Mappings;
 using HLLib.Packages.Common;

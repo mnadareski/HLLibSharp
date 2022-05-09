@@ -11,6 +11,7 @@
 
 using System;
 using System.Text;
+using HLLib.Checksums;
 using HLLib.Directory;
 using HLLib.Mappings;
 using HLLib.Streams;
