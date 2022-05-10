@@ -10,7 +10,7 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using HLLib.Checksums;
 using HLLib.Directory;
@@ -263,13 +263,7 @@ namespace HLLib.Packages.GCF
             if (nameOffset < 0 || nameOffset >= DirectoryNames.Length)
                 return null;
 
-            List<char> temp = new List<char>();
-            while (DirectoryNames[nameOffset] != '\0')
-            {
-                temp.Add(DirectoryNames[nameOffset++]);
-            }
-
-            return new string(temp.ToArray());
+            return new string(DirectoryNames.Substring(nameOffset).TakeWhile(c => c != '\0').ToArray());
         }
 
         #endregion
