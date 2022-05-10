@@ -22,18 +22,18 @@ namespace HLLib.Packages.SGA
         /// Per-directory creation of a root directory object, if possible
         /// </summary>
         /// <returns>Root directory folder, null on error</returns>
-        protected virtual DirectoryFolder CreateRoot() => null;
+        public abstract DirectoryFolder CreateRoot();
 
         /// <summary>
         /// Internally map all data structures
         /// </summary>
         /// <returns>True if all structures could be mapped, false otherwise</returns>
-        protected virtual bool MapDataStructures() => false;
+        public abstract bool MapDataStructures();
 
         /// <summary>
         /// Internally unmap all data structures
         /// </summary>
-        protected virtual void UnmapDataStructures() { }
+        public abstract void UnmapDataStructures();
 
         #endregion
 
@@ -45,11 +45,7 @@ namespace HLLib.Packages.SGA
         /// <param name="packageAttribute">Package attribute to get derive from</param>
         /// <param name="attribute">Output attribute for that value</param>
         /// <returns>True if the value could be derived, false otherwise</returns>
-        protected virtual bool GetItemAttributeInternal(DirectoryItem item, PackageAttributeType packageAttribute, out PackageAttribute attribute)
-        {
-            attribute = null;
-            return false;
-        }
+        public abstract bool GetItemAttributeInternal(DirectoryItem item, PackageAttributeType packageAttribute, out PackageAttribute attribute);
 
         #endregion
 
@@ -61,11 +57,7 @@ namespace HLLib.Packages.SGA
         /// <param name="file">DirectoryFile representing the internal file</param>
         /// <param name="extractable">True if the file can be extracted, false otherwise</param>
         /// <returns>True if the extractability could be derived, false otherwise</returns>
-        protected virtual bool GetFileExtractableInternal(DirectoryFile file, out bool extractable)
-        {
-            extractable = false;
-            return false;
-        }
+        public abstract bool GetFileExtractableInternal(DirectoryFile file, out bool extractable);
 
         #endregion
 
@@ -77,11 +69,7 @@ namespace HLLib.Packages.SGA
         /// <param name="file">DirectoryFile representing the internal file</param>
         /// <param name="validation">Output validation value</param>
         /// <returns>True if the validaiton could be performed, false otherwise</returns>
-        protected virtual bool GetFileValidationInternal(DirectoryFile file, out Validation validation)
-        {
-            validation = Validation.HL_VALIDATES_ERROR;
-            return false;
-        }
+        public abstract bool GetFileValidationInternal(DirectoryFile file, out Validation validation);
 
         #endregion
 
@@ -93,11 +81,7 @@ namespace HLLib.Packages.SGA
         /// <param name="file">DirectoryFile representing the internal file</param>
         /// <param name="size">Output size value</param>
         /// <returns>True if the size could be derived, false otherwise</returns>
-        protected virtual bool GetFileSizeInternal(DirectoryFile file, out int size)
-        {
-            size = default;
-            return false;
-        }
+        public abstract bool GetFileSizeInternal(DirectoryFile file, out int size);
 
         /// <summary>
         /// Per-directory implementation of extracted size check
@@ -105,11 +89,7 @@ namespace HLLib.Packages.SGA
         /// <param name="file">DirectoryFile representing the internal file</param>
         /// <param name="size">Output size value</param>
         /// <returns>True if the size could be derived, false otherwise</returns>
-        protected virtual bool GetFileSizeOnDiskInternal(DirectoryFile file, out int size)
-        {
-            size = default;
-            return false;
-        }
+        public abstract bool GetFileSizeOnDiskInternal(DirectoryFile file, out int size);
 
         #endregion
 
@@ -122,11 +102,7 @@ namespace HLLib.Packages.SGA
         /// <param name="readEncrypted">True to read encrypted files, false otherwise</param>
         /// <param name="stream">Output stream</param>
         /// <returns>True if the stream could be created, false otherwise</returns>
-        protected virtual bool CreateStreamInternal(DirectoryFile file, bool readEncrypted, out Stream stream)
-        {
-            stream = null;
-            return false;
-        }
+        public abstract bool CreateStreamInternal(DirectoryFile file, bool readEncrypted, out Stream stream);
 
         #endregion
     }

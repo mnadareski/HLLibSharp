@@ -115,6 +115,10 @@ namespace HLLib.Packages
                 if (new byte[] { (byte)'P', (byte)'A', (byte)'C', (byte)'K' }.SequenceEqual(magic.Take(4)))
                     return PackageType.HL_PACKAGE_PAK;
 
+                // SGA
+                if (new byte[] { (byte)'_', (byte)'A', (byte)'R', (byte)'C', (byte)'H', (byte)'I', (byte)'V', (byte)'E' }.SequenceEqual(magic.Take(8)))
+                    return PackageType.HL_PACKAGE_SGA;
+
                 // VBSP
                 if (new byte[] { (byte)'V', (byte)'B', (byte)'S', (byte)'P' }.SequenceEqual(magic.Take(4)))
                     return PackageType.HL_PACKAGE_VBSP;
@@ -156,6 +160,10 @@ namespace HLLib.Packages
                 // PAK
                 if (extension == new PAK.PAKFile().Extension)
                     return PackageType.HL_PACKAGE_PAK;
+
+                // SGA
+                if (extension == new SGA.SGAFile().Extension)
+                    return PackageType.HL_PACKAGE_SGA;
 
                 // VBSP
                 if (extension == new VBSP.VBSPFile().Extension)

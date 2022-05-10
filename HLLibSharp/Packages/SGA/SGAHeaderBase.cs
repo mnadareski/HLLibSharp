@@ -14,7 +14,7 @@ using System.Text;
 
 namespace HLLib.Packages.SGA
 {
-    public abstract class SGAHeaderBase
+    public class SGAHeaderBase
     {
         /// <summary>
         /// Total size of a SGAHeaderBase object
@@ -26,6 +26,21 @@ namespace HLLib.Packages.SGA
         public ushort MajorVersion { get; set; }
 
         public ushort MinorVersion { get; set; }
+
+        public static SGAHeaderBase Create(byte[] data, ref int offset)
+        {
+            SGAHeaderBase headerBase = new SGAHeaderBase();
+
+            // Check to see if the data is valid
+            if (data == null || data.Length < ObjectSize)
+                return null;
+
+            headerBase.Signature = Encoding.ASCII.GetString(data, offset, 8); offset += 8;
+            headerBase.MajorVersion = BitConverter.ToUInt16(data, offset); offset += 2;
+            headerBase.MinorVersion = BitConverter.ToUInt16(data, offset); offset += 2;
+
+            return headerBase;
+        }
 
         protected static void Fill(SGAHeaderBase headerBase, byte[] data, ref int offset)
         {
