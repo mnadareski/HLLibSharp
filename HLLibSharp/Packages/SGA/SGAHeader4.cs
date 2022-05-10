@@ -33,7 +33,7 @@ namespace HLLib.Packages.SGA
 
         public uint Dummy0 { get; set; }
 
-        public static SGAHeader4 Create(byte[] data, ref int offset)
+        public static new SGAHeader4 Create(byte[] data, ref int offset)
         {
             SGAHeader4 header = new SGAHeader4();
 
