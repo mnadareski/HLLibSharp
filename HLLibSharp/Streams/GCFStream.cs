@@ -141,7 +141,12 @@ namespace HLLib.Streams
 
             BlockEntryIndex = Package.DirectoryMapEntries[FileID].FirstBlockIndex;
             BlockEntryOffset = 0;
-            DataBlockIndex = Package.BlockEntries[BlockEntryIndex].FirstDataBlockIndex;
+
+            if (BlockEntryIndex < Package.BlockEntries.Length)
+                DataBlockIndex = Package.BlockEntries[BlockEntryIndex].FirstDataBlockIndex;
+            else
+                DataBlockIndex = 0;
+
             DataBlockOffset = 0;
 
             return true;
@@ -242,22 +247,19 @@ namespace HLLib.Streams
                     if (!Map(InternalPointer))
                         break;
 
-                    long viewPointer = BlockEntryOffset + DataBlockOffset;
-                    long viewBytes = View.Length - viewPointer;
-
-                    if (viewBytes > bytes)
+                    if (View.Length > bytes)
                     {
-                        Array.Copy(View.ViewData, viewPointer, data, offset, bytes);
+                        Array.Copy(View.ViewData, 0, data, offset, bytes);
                         InternalPointer += bytes;
                         offset += bytes;
                         break;
                     }
-                    else if (viewBytes > 0)
+                    else if (View.Length > 0)
                     {
-                        Array.Copy(View.ViewData, viewPointer, data, offset, viewBytes);
-                        InternalPointer += viewBytes;
-                        offset += viewBytes;
-                        bytes -= (int)viewBytes;
+                        Array.Copy(View.ViewData, 0, data, offset, View.Length);
+                        InternalPointer += View.Length;
+                        offset += View.Length;
+                        bytes -= View.Length;
                     }
                     else
                     {
@@ -368,18 +370,18 @@ namespace HLLib.Streams
             {
                 BlockEntryIndex = Package.DirectoryMapEntries[FileID].FirstBlockIndex;
                 BlockEntryOffset = 0;
-                DataBlockIndex = Package.BlockEntries[FileID].FirstDataBlockIndex;
+                DataBlockIndex = Package.BlockEntries[BlockEntryIndex].FirstDataBlockIndex;
                 DataBlockOffset = 0;
             }
 
             int length = (int)(DataBlockOffset + Package.DataBlockHeader.BlockSize > Package.BlockEntries[BlockEntryIndex].FileDataSize ? Package.BlockEntries[BlockEntryIndex].FileDataSize - DataBlockOffset : Package.DataBlockHeader.BlockSize);
             //int uiDataBlockTerminator = gcfFile.DataBlockHeader.BlockCount >= 0x0000FFFF ? 0xFFFFFFFF : 0x0000FFFF;
-            uint uiDataBlockTerminator = Package.FragmentationMapHeader.Terminator == 0 ? 0x0000FFFF : 0xFFFFFFFF;
+            uint dataBlockTerminator = Package.FragmentationMapHeader.Terminator == 0 ? 0x0000FFFF : 0xFFFFFFFF;
 
-            while ((pointer > BlockEntryOffset + DataBlockOffset + length) && BlockEntryIndex != Package.DataBlockHeader.BlockCount)
+            while ((pointer >= BlockEntryOffset + DataBlockOffset + length) && BlockEntryIndex != Package.DataBlockHeader.BlockCount)
             {
                 // Loop through each data block fragment.
-                while ((pointer >= BlockEntryOffset + DataBlockOffset + length) && (DataBlockIndex < uiDataBlockTerminator && DataBlockOffset < Package.BlockEntries[BlockEntryIndex].FileDataSize))
+                while ((pointer >= BlockEntryOffset + DataBlockOffset + length) && (DataBlockIndex < dataBlockTerminator && DataBlockOffset < Package.BlockEntries[BlockEntryIndex].FileDataSize))
                 {
                     // Get the next data block fragment.
                     DataBlockIndex = Package.FragmentationMaps[DataBlockIndex].NextDataBlockIndex;
@@ -402,7 +404,7 @@ namespace HLLib.Streams
                 }
             }
 
-            if (BlockEntryIndex == Package.DataBlockHeader.BlockCount || DataBlockIndex >= uiDataBlockTerminator)
+            if (BlockEntryIndex == Package.DataBlockHeader.BlockCount || DataBlockIndex >= dataBlockTerminator)
             {
                 if (BlockEntryOffset + DataBlockOffset < Package.DirectoryEntries[FileID].ItemSize)
                     Console.WriteLine($"Unexpected end of GCF stream ({BlockEntryOffset + DataBlockOffset} B of {Package.DirectoryEntries[FileID].ItemSize} B).  Has the GCF file been completely acquired?");
