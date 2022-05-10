@@ -8,3 +8,5 @@
 /Test/obj
 /Test/bin/Debug
 /Test/Properties
+/HLLibSharp/bin/Release/netstandard2.0
+/Test/bin/Release
