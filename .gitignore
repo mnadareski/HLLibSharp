@@ -35,3 +35,6 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+
+# Visual Studio 2022
+/Test/Properties
