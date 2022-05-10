@@ -59,6 +59,19 @@ namespace HLLib.Packages
         HL_NCF_ITEM_BACKUP_LOCAL,
         HL_NCF_ITEM_FLAGS,
 
+        HL_SGA_PACKAGE_VERSION_MAJOR = 0,
+        HL_SGA_PACKAGE_VERSION_MINOR,
+        HL_SGA_PACKAGE_MD5_FILE,
+        HL_SGA_PACKAGE_NAME,
+        HL_SGA_PACKAGE_MD5_HEADER,
+
+        HL_SGA_ITEM_SECTION_ALIAS = 0,
+        HL_SGA_ITEM_SECTION_NAME,
+        HL_SGA_ITEM_MODIFIED,
+        HL_SGA_ITEM_TYPE,
+        HL_SGA_ITEM_CRC,
+        HL_SGA_ITEM_VERIFICATION,
+
         HL_VBSP_PACKAGE_VERSION = 0,
         HL_VBSP_PACKAGE_MAP_REVISION,
 
@@ -122,7 +135,21 @@ namespace HLLib.Packages
         HL_PACKAGE_XZP,
         HL_PACKAGE_ZIP,
         HL_PACKAGE_NCF,
-        HL_PACKAGE_VPK
+        HL_PACKAGE_VPK,
+        HL_PACKAGE_SGA
+    }
+
+    /// <summary>
+    /// Internal file verification type for SGA packages
+    /// </summary>
+    public enum SGAFileVerification
+    {
+        VERIFICATION_NONE,
+        VERIFICATION_CRC,
+        VERIFICATION_CRC_BLOCKS,
+        VERIFICATION_MD5_BLOCKS,
+        VERIFICATION_SHA1_BLOCKS,
+        VERIFICATION_COUNT,
     }
 
     /// <summary>
