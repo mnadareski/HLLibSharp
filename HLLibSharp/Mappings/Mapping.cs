@@ -178,6 +178,7 @@ namespace HLLib.Mappings
                     if (Views[i] == view)
                     {
                         UnmapInternal(view);
+                        view = null;
                         Views.RemoveAt(i);
                         return true;
                     }
