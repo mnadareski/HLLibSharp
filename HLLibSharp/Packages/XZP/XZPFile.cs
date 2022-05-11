@@ -10,13 +10,16 @@
  */
 
 using System;
-using System.Text;
+using System.Linq;
 using HLLib.Directory;
 using HLLib.Mappings;
 using HLLib.Streams;
 
 namespace HLLib.Packages.XZP
 {
+    /// <summary>
+    /// XBox Package File
+    /// </summary>
     public class XZPFile : Package
     {
         #region Constants
@@ -139,7 +142,7 @@ namespace HLLib.Packages.XZP
                     {
                         if (DirectoryEntries[i].FileNameCRC == DirectoryItems[j].FileNameCRC)
                         {
-                            string fileName = Encoding.ASCII.GetString(DirectoryItemView.ViewData, (int)(DirectoryItems[j].NameOffset - Header.DirectoryItemOffset), 256);
+                            string fileName = new string(DirectoryItemView.ViewData.Skip((int)(DirectoryItems[j].NameOffset - Header.DirectoryItemOffset)).TakeWhile(b => b != 0x00).Select(b => (char)b).ToArray());
 
                             // Check if we have just a file, or if the file has directories we need to create.
                             if (fileName.IndexOf('/') == 0 && fileName.IndexOf('\\') == 0)
