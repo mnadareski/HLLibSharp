@@ -10,6 +10,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Text;
 using HLLib.Checksums;
 using HLLib.Directory;
@@ -21,6 +22,10 @@ namespace HLLib.Packages.NCF
     /// <summary>
     /// Half-Life No Cache File
     /// </summary>
+    /// <remarks>
+    /// Requires a root path to be set for practical use.
+    /// This root path is usually "common".
+    /// </remarks>
     public sealed class NCFFile : Package
     {
         #region Constants
@@ -238,10 +243,8 @@ namespace HLLib.Packages.NCF
             if (!Mapping.Map(ref HeaderView, 0, NCFHeader.ObjectSize))
                 return false;
 
-            byte[] headerViewData = HeaderView.ViewData;
             int pointer = 0;
-
-            Header = NCFHeader.Create(headerViewData, ref pointer);
+            Header = NCFHeader.Create(HeaderView.ViewData, ref pointer);
             if (Header == null)
             {
                 Console.WriteLine("Invalid file: the file's header is null (contains no data).");
@@ -263,7 +266,8 @@ namespace HLLib.Packages.NCF
             if (!Mapping.Map(ref HeaderView, headerSize, NCFDirectoryHeader.ObjectSize))
                 return false;
 
-            DirectoryHeader = NCFDirectoryHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            DirectoryHeader = NCFDirectoryHeader.Create(HeaderView.ViewData, ref pointer);
 
             headerSize += DirectoryHeader.DirectorySize;
             headerSize += NCFUnknownHeader.ObjectSize;
@@ -276,7 +280,8 @@ namespace HLLib.Packages.NCF
             if (!Mapping.Map(ref HeaderView, headerSize, NCFChecksumHeader.ObjectSize))
                 return false;
 
-            ChecksumHeader = NCFChecksumHeader.Create(headerViewData, ref pointer);
+            pointer = 0;
+            ChecksumHeader = NCFChecksumHeader.Create(HeaderView.ViewData, ref pointer);
             headerSize += NCFChecksumHeader.ObjectSize + ChecksumHeader.ChecksumSize;
 
             #endregion
@@ -289,63 +294,62 @@ namespace HLLib.Packages.NCF
                 return false;
 
             pointer = 0;
+            Header = NCFHeader.Create(HeaderView.ViewData, ref pointer);
 
-            Header = NCFHeader.Create(headerViewData, ref pointer);
-
-            DirectoryHeader = NCFDirectoryHeader.Create(headerViewData, ref pointer);
+            DirectoryHeader = NCFDirectoryHeader.Create(HeaderView.ViewData, ref pointer);
             DirectoryEntries = new NCFDirectoryEntry[DirectoryHeader.ItemCount];
             for (int i = 0; i < DirectoryHeader.ItemCount; i++)
             {
-                DirectoryEntries[i] = NCFDirectoryEntry.Create(headerViewData, ref pointer);
+                DirectoryEntries[i] = NCFDirectoryEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
-            DirectoryNames = Encoding.ASCII.GetString(headerViewData, pointer, (int)DirectoryHeader.NameSize);
+            DirectoryNames = Encoding.ASCII.GetString(HeaderView.ViewData, pointer, (int)DirectoryHeader.NameSize);
 
             DirectoryInfo1Entries = new NCFDirectoryInfo1Entry[DirectoryHeader.Info1Count];
             for (int i = 0; i < DirectoryHeader.Info1Count; i++)
             {
-                DirectoryInfo1Entries[i] = NCFDirectoryInfo1Entry.Create(headerViewData, ref pointer);
+                DirectoryInfo1Entries[i] = NCFDirectoryInfo1Entry.Create(HeaderView.ViewData, ref pointer);
             }
 
             DirectoryInfo2Entries = new NCFDirectoryInfo2Entry[DirectoryHeader.ItemCount];
             for (int i = 0; i < DirectoryHeader.ItemCount; i++)
             {
-                DirectoryInfo2Entries[i] = NCFDirectoryInfo2Entry.Create(headerViewData, ref pointer);
+                DirectoryInfo2Entries[i] = NCFDirectoryInfo2Entry.Create(HeaderView.ViewData, ref pointer);
             }
 
             DirectoryCopyEntries = new NCFDirectoryCopyEntry[DirectoryHeader.CopyCount];
             for (int i = 0; i < DirectoryHeader.CopyCount; i++)
             {
-                DirectoryCopyEntries[i] = NCFDirectoryCopyEntry.Create(headerViewData, ref pointer);
+                DirectoryCopyEntries[i] = NCFDirectoryCopyEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             DirectoryLocalEntries = new NCFDirectoryLocalEntry[DirectoryHeader.LocalCount];
             for (int i = 0; i < DirectoryHeader.LocalCount; i++)
             {
-                DirectoryLocalEntries[i] = NCFDirectoryLocalEntry.Create(headerViewData, ref pointer);
+                DirectoryLocalEntries[i] = NCFDirectoryLocalEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             pointer = (int)DirectoryHeader.DirectorySize;
-            UnknownHeader = NCFUnknownHeader.Create(headerViewData, ref pointer);
+            UnknownHeader = NCFUnknownHeader.Create(HeaderView.ViewData, ref pointer);
             UnknownEntries = new NCFUnknownEntry[DirectoryHeader.ItemCount];
             for (int i = 0; i < DirectoryHeader.ItemCount; i++)
             {
-                UnknownEntries[i] = NCFUnknownEntry.Create(headerViewData, ref pointer);
+                UnknownEntries[i] = NCFUnknownEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
-            ChecksumHeader = NCFChecksumHeader.Create(headerViewData, ref pointer);
-            ChecksumMapHeader = NCFChecksumMapHeader.Create(headerViewData, ref pointer);
+            ChecksumHeader = NCFChecksumHeader.Create(HeaderView.ViewData, ref pointer);
+            ChecksumMapHeader = NCFChecksumMapHeader.Create(HeaderView.ViewData, ref pointer);
 
             ChecksumMapEntries = new NCFChecksumMapEntry[ChecksumMapHeader.ItemCount];
             for (int i = 0; i < ChecksumMapHeader.ItemCount; i++)
             {
-                ChecksumMapEntries[i] = NCFChecksumMapEntry.Create(headerViewData, ref pointer);
+                ChecksumMapEntries[i] = NCFChecksumMapEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             ChecksumEntries = new NCFChecksumEntry[ChecksumMapHeader.ChecksumCount];
             for (int i = 0; i < ChecksumMapHeader.ChecksumCount; i++)
             {
-                ChecksumEntries[i] = NCFChecksumEntry.Create(headerViewData, ref pointer);
+                ChecksumEntries[i] = NCFChecksumEntry.Create(HeaderView.ViewData, ref pointer);
             }
 
             #endregion
@@ -387,6 +391,7 @@ namespace HLLib.Packages.NCF
         {
             // Get the first directory item.
             uint index = DirectoryEntries[folder.ID].FirstIndex;
+            string name = new string(DirectoryNames.Substring((int)DirectoryEntries[index].NameOffset).TakeWhile(c => c != '\0').ToArray());
 
             // Loop through directory items.
             while (index != 0 && index != 0xffffffff)
@@ -395,7 +400,7 @@ namespace HLLib.Packages.NCF
                 if ((DirectoryEntries[index].DirectoryFlags & HL_NCF_FLAG_FILE) == 0)
                 {
                     // Add the directory item to the current folder.
-                    DirectoryFolder subFolder = folder.AddFolder(DirectoryNames.Substring((int)DirectoryEntries[index].NameOffset), index);
+                    DirectoryFolder subFolder = folder.AddFolder(name, index);
 
                     // Build the new folder.
                     CreateRoot(subFolder);
@@ -403,7 +408,7 @@ namespace HLLib.Packages.NCF
                 else
                 {
                     // Add the directory item to the current folder.
-                    folder.AddFile(DirectoryNames.Substring((int)DirectoryEntries[index].NameOffset), index);
+                    folder.AddFile(name, index);
                 }
 
                 // Get the next directory item.
