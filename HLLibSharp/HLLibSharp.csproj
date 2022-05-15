@@ -10,9 +10,9 @@
       <Copyright>Copyright (c)2006-2013 Ryan Gregg, Copyright (c)2022 Matt Nadareski</Copyright>
       <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
       <RepositoryUrl>https://github.com/mnadareski/HLLibSharp</RepositoryUrl>
-      <Version>0.0.1</Version>
-      <AssemblyVersion>0.0.1</AssemblyVersion>
-      <FileVersion>0.0.1</FileVersion>
+      <Version>2.4.5</Version>
+      <AssemblyVersion>2.4.5</AssemblyVersion>
+      <FileVersion>2.4.5</FileVersion>
       <IncludeSource>true</IncludeSource>
       <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
