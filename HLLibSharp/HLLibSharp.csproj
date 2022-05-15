@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-      <PlatformTarget>x86</PlatformTarget>
       <Title>HLLibSharp</Title>
       <AssemblyName>HLLibSharp</AssemblyName>
       <Description>Port of HLLib to C#, with additions</Description>
