@@ -257,12 +257,16 @@ namespace HLLib.Packages.VBSP
 
             // Versions:
             //  19-20:			Source
-            //  21:				Source - The lump version property was moved to the start of the struct.
+            //  21-22:			Source - The lump version property was moved to the start of the struct.
             //  0x00040014:		Dark Messiah - Looks like the 32 bit version has been split into two 16 bit fields.
-            if ((Header.Version < 19 || Header.Version > 21) && Header.Version != 0x00040014)
+            if ((Header.Version < 19 || Header.Version > 22) && Header.Version != 0x00040014)
             {
                 Console.WriteLine($"Invalid VBSP version (v{Header.Version}): you have a version of a VBSP file that HLLib does not know how to read. Check for product updates.");
                 return false;
+            }
+            else if (Header.Version == 22)
+            {
+                Console.WriteLine($"VBSP version 22 is not verified to extract 100% correctly, but is likely to work without issue.");
             }
 
             // This block was commented out because test VBSPs with header
