@@ -1102,7 +1102,7 @@ namespace HLLib.Packages.GCF
 
             if (CreateStreamInternal(file, true, out Stream stream))
             {
-                if (stream.Open(FileModeFlags.HL_MODE_READ))
+                if (stream.Open(FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_VOLATILE))
                 {
                     validation = Validation.HL_VALIDATES_OK;
 

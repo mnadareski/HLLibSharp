@@ -537,7 +537,7 @@ namespace HLLib.Packages.NCF
                     {
                         FileStream Stream = new FileStream(temp);
 
-                        if (Stream.Open(FileModeFlags.HL_MODE_READ))
+                        if (Stream.Open(FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_VOLATILE))
                         {
                             validation = Validation.HL_VALIDATES_OK;
 

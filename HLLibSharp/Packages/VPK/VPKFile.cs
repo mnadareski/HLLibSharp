@@ -479,7 +479,7 @@ namespace HLLib.Packages.VPK
                 {
                     if (CreateStreamInternal(file, true, out Streams.Stream stream))
                     {
-                        if (stream.Open(FileModeFlags.HL_MODE_READ))
+                        if (stream.Open(FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_VOLATILE))
                         {
                             uint checksum = 0;
                             validation = Validation.HL_VALIDATES_OK;

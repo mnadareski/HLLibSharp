@@ -364,7 +364,7 @@ namespace HLLib.Packages.ZIP
             uint checksum = 0;
             if (CreateStreamInternal(file, true, out Stream stream))
             {
-                if (stream.Open(FileModeFlags.HL_MODE_READ))
+                if (stream.Open(FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_VOLATILE))
                 {
                     long totalBytes = 0;
                     int bufferSize;

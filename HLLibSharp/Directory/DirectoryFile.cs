@@ -135,7 +135,7 @@ namespace HLLib.Directory
 
                 if (Package.CreateStream(this, readEncrypted, out Streams.Stream input))
                 {
-                    if (input.Open(FileModeFlags.HL_MODE_READ))
+                    if (input.Open(FileModeFlags.HL_MODE_READ | FileModeFlags.HL_MODE_VOLATILE))
                     {
                         Streams.FileStream output = new Streams.FileStream(fileName);
 
