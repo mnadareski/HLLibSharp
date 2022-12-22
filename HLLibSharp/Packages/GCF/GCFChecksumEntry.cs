@@ -9,10 +9,10 @@
  * version.
  */
 
+using System;
+
 namespace HLLib.Packages.GCF
 {
-    using System;
-
     public sealed class GCFChecksumEntry
     {
         /// <summary>
