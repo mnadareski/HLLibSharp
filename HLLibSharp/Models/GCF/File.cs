@@ -14,7 +14,7 @@ namespace HLLib.Models.GCF
     /// <summary>
     /// Half-Life Game Cache File
     /// </summary>
-    public sealed class GCFFile
+    public sealed class File
     {
         /// <summary>
         /// Header data

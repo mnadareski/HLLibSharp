@@ -93,7 +93,7 @@ namespace HLLib.Builder
 
             // Create the lump array
             file.Lumps = new Lump[HL_BSP_LUMP_COUNT];
-            
+
             // Try to parse the lumps
             for (int i = 0; i < HL_BSP_LUMP_COUNT; i++)
             {
@@ -171,17 +171,15 @@ namespace HLLib.Builder
             TextureHeader textureHeader = new TextureHeader();
 
             textureHeader.TextureCount = data.ReadUInt32();
-            if (textureHeader.TextureCount > 0)
+            
+            var offsets = new uint[textureHeader.TextureCount];
+
+            for (int i = 0; i < textureHeader.TextureCount; i++)
             {
-                var offsets = new uint[textureHeader.TextureCount];
-
-                for (int i = 0; i < textureHeader.TextureCount; i++)
-                {
-                    offsets[i] = data.ReadUInt32();
-                }
-
-                textureHeader.Offsets = offsets;
+                offsets[i] = data.ReadUInt32();
             }
+
+            textureHeader.Offsets = offsets;
 
             return textureHeader;
         }
