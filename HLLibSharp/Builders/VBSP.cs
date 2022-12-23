@@ -124,7 +124,7 @@ namespace HLLib.Builder
                 return null;
 
             header.Version = data.ReadInt32();
-            if ((header.Version < 19 || header.Version > 21) && header.Version != 0x00040014)
+            if ((header.Version < 19 || header.Version > 22) && header.Version != 0x00040014)
                 return null;
 
             header.Lumps = new Lump[HL_VBSP_LUMP_COUNT];
