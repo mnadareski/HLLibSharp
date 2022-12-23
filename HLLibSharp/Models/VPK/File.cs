@@ -17,11 +17,6 @@ namespace HLLib.Models.VPK
     public sealed class File
     {
         /// <summary>
-        /// Number of internal archives
-        /// </summary>
-        public uint ArchiveCount { get; set; }
-
-        /// <summary>
         /// Header data
         /// </summary>
         public Header Header { get; set; }
