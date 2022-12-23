@@ -386,7 +386,7 @@ namespace HLLib.Builder
         /// Parse a Stream into a Half-Life Game Cache header
         /// </summary>
         /// <param name="data">Stream to parse</param>
-        /// <returns>Filled Half-Life Level  Game Cache on success, null on error</returns>
+        /// <returns>Filled Half-Life Game Cache on success, null on error</returns>
         private static Header ParseHeader(Stream data)
         {
             // TODO: Use marshalling here instead of building
