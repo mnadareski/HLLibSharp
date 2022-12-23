@@ -61,7 +61,7 @@ namespace HLLib.Builder
             if (header == null)
                 return null;
 
-            // Set the no cache header
+            // Set the package header
             file.Header = header;
 
             #endregion

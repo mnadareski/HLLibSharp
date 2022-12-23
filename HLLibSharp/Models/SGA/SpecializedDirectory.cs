@@ -9,6 +9,8 @@
  * version.
  */
 
+using System.Collections.Generic;
+
 // TODO: Include zlib to sync with newest version
 namespace HLLib.Models.SGA
 {
@@ -50,6 +52,6 @@ namespace HLLib.Models.SGA
         /// <summary>
         /// String table data
         /// </summary>
-        public string StringTable { get; set; }
+        public Dictionary<long, string> StringTable { get; set; }
     }
 }
