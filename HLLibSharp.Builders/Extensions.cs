@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace HLLib
+namespace HLLib.Builders
 {
     public static class Extensions
     {

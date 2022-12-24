@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using HLLib.Models.SGA;
 
-namespace HLLib.Builder
+namespace HLLib.Builders
 {
     public class SGA
     {

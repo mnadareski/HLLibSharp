@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using HLLib.Models.VPK;
 
-namespace HLLib.Builder
+namespace HLLib.Builders
 {
     public class VPK
     {

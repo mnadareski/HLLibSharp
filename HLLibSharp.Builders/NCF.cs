@@ -2,7 +2,7 @@ using System.IO;
 using System.Text;
 using HLLib.Models.NCF;
 
-namespace HLLib.Builder
+namespace HLLib.Builders
 {
     public class NCF
     {

@@ -1,7 +1,7 @@
 using System.IO;
 using HLLib.Models.BSP;
 
-namespace HLLib.Builder
+namespace HLLib.Builders
 {
     public class BSP
     {

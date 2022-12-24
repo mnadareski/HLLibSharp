@@ -2,7 +2,7 @@ using System.IO;
 using System.Text;
 using HLLib.Models.GCF;
 
-namespace HLLib.Builder
+namespace HLLib.Builders
 {
     public class GCF
     {
