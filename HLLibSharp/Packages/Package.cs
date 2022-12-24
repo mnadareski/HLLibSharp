@@ -124,7 +124,7 @@ namespace HLLib.Packages
                     return PackageType.HL_PACKAGE_VBSP;
 
                 // VPK
-                if (new byte[] { 0x34, 0x12, 0x55, 0xaa }.SequenceEqual(magic.Take(4)))
+                if (new byte[] { 0x34, 0x12, 0xaa, 0x55 }.SequenceEqual(magic.Take(4)))
                     return PackageType.HL_PACKAGE_VPK;
 
                 // WAD
