@@ -8,7 +8,7 @@
     <Authors>Matt Nadareski;Ryan Gregg</Authors>
     <Product>HLLibSharp</Product>
     <Copyright>Copyright (c)2006-2013 Ryan Gregg, Copyright (c)2022-2023 Matt Nadareski</Copyright>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/mnadareski/HLLibSharp</RepositoryUrl>
     <Version>2.4.5</Version>
     <AssemblyVersion>2.4.5</AssemblyVersion>
@@ -20,9 +20,5 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
-  </ItemGroup>
 
 </Project>
